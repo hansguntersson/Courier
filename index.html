@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Courier v1.0.47</title>
+  <title>Courier v1.0.46</title>
   <style>
     :root{
       color-scheme: dark;
@@ -564,7 +564,7 @@
 "use strict";
 
 /* =================== CONFIG =================== */
-const VERSION = "1.0.47";
+const VERSION = "1.0.46";
 const WEEKLY_TARGET = 1000;
 
 const PRICES = { drink: 12, snack: 6 };
@@ -596,7 +596,7 @@ const RANDOM_EOD_NEGATIVES=[
   "Networking event ticket","Dry cleaning","Replacement wallet","Pet food","Online impulse purchase"
 ];
 
-/* Random EOD positives (100) — occur ~1/5th as frequently as negatives */
+/* Random EOD positives (100) — occur ~1/5 as frequently as negatives */
 const RANDOM_EOD_POSITIVES=[
   "Found £5 note","Unexpected tip","Cashback refund","Loyalty reward","Refund from retailer",
   "Overpayment returned","Referral bonus","Promo code rebate","Client goodwill bonus","Delivery surge payout",
@@ -1476,7 +1476,11 @@ function completeJob(){
 
   showResult(true, "Complete", tipOrPenalty, late ? "late" : (tipOrPenalty>0 ? "early" : "ontime"));
 
+  // remove offer instance (or keep if repeat but regenerate list anyway)
   state.job = null;
+
+  // If it’s already after midnight, show EOD immediately
+  if(minutesOfDay() < 1){ /* unlikely; guard */ }
   saveState(true);
 }
 
@@ -1492,13 +1496,6 @@ function maybeTriggerOptionalEvent(){
     state.lastPromptAbs=abs;
     updateEventBtnUI();
   }
-}
-
-/* FIX: event minute deltas must affect jobElapsedMin (time taken / avg speed) */
-function applyJobTimeDelta(mins){
-  if(!state.job) return;
-  if(!mins) return;
-  state.jobElapsedMin = Math.max(0, state.jobElapsedMin + mins);
 }
 
 function applyRandomEvent(fromOptional=false){
@@ -1521,10 +1518,7 @@ function applyRandomEvent(fromOptional=false){
 
   // apply
   if(e.energy) state.energy = clamp(state.energy + e.energy, 0, 100);
-  if(e.mins){
-    advanceMinutes(e.mins);
-    applyJobTimeDelta(e.mins);
-  }
+  if(e.mins) advanceMinutes(e.mins);
 
   // show modal
   const list=$("eventList");
@@ -1573,6 +1567,7 @@ function useDrink(){
   if(now < state.drinkCdUntil) return;
 
   state.drinks--;
+  state.stats.spent += 0; // purchase already tracked
   state.energy = clamp(state.energy + 20, 0, 100);
 
   state.drinkFx = { crashAt: now + 15000, crashed:false };
@@ -1605,6 +1600,7 @@ function advanceMinutes(mins){
   while(state.time >= 1440){
     state.time -= 1440;
     state.day++;
+    // on rollover, if job is active, allow it to continue into next day; EOD will trigger when job ends
     if(!state.job) showEndOfDay();
   }
   while(state.time < 0){
@@ -1614,6 +1610,7 @@ function advanceMinutes(mins){
 }
 
 function genEodExtras(){
+  // "sometimes include random item or two"
   const r=Math.random();
   let negCount=0;
   if(r<0.55) negCount=0;
@@ -1632,6 +1629,7 @@ function genEodExtras(){
   }
 
   const poss=[];
+  // positives occur 1/5th as frequently
   if(negs.length>0 && Math.random()<0.20){
     const label=pickRand(RANDOM_EOD_POSITIVES);
     const amt = 5 + Math.floor(Math.random()*26); // £5–£30
@@ -1665,6 +1663,7 @@ function showEndOfDay(){
   const deductions = state.eod.bills + state.eod.food + (state.eod.rentWeekly||0) + negTotal;
   const net = state.eod.earnings - deductions + posTotal;
 
+  // apply to cash: daily bills/food + extras +/- weekly rent
   state.cash = Math.max(0, state.cash - state.eod.bills - state.eod.food - negTotal);
   if(state.eod.rentWeeklyDue) state.cash = Math.max(0, state.cash - state.eod.rentWeekly);
   state.cash += posTotal;
@@ -1690,6 +1689,7 @@ function showEndOfDay(){
   rows.push(`<div class="vrow total"><span>Net</span><span>£${net}</span></div>`);
   $("endList").innerHTML = rows.join("");
 
+  // reset day counters for next day
   state.dayEarnings = 0;
   state.jobsDone = 0;
   state.eod = null;
@@ -1700,10 +1700,11 @@ function showEndOfDay(){
 }
 
 function confirmEndOfDay(){
+  // start next day morning if we're still in night; otherwise just go hub
   if(minutesOfDay() < 8*60){
     state.time = 8*60;
   }
-  state.energy = clamp(state.energy + 25, 0, 100);
+  state.energy = clamp(state.energy + 25, 0, 100); // morning reset-ish
   genOffers();
   setMode("hub");
   renderTop();
@@ -1734,6 +1735,7 @@ function buyDrink(){
 function openRest(){ $("restModal").style.display="flex"; }
 function closeRest(){ $("restModal").style.display="none"; }
 function restHours(h){
+  // resting increases energy modestly and advances time
   const gain = h===2 ? 10 : h===4 ? 20 : h===8 ? 35 : 50;
   state.energy = clamp(state.energy + gain, 0, 100);
   advanceMinutes(h*60);
@@ -1742,6 +1744,7 @@ function restHours(h){
   saveState(true);
 }
 function restUntilMorning(){
+  // go to next day 08:00
   const m=minutesOfDay();
   let delta;
   if(m < 8*60) delta = (8*60) - m;
@@ -1759,11 +1762,13 @@ function step(ts){
   const dtMs = Math.min(100, ts - state.lastTs);
   state.lastTs = ts;
 
+  // Optional event prompt expiry
   if(state.promptActive && Date.now() > state.promptEndMs){
     state.promptActive=false;
     updateEventBtnUI();
   }
 
+  // Snack effect tick
   const now=Date.now();
   if(state.snackFx){
     if(now >= state.snackFx.startAt){
@@ -1778,11 +1783,13 @@ function step(ts){
     }
   }
 
+  // Drink crash
   if(state.drinkFx && !state.drinkFx.crashed && now >= state.drinkFx.crashAt){
     state.drinkFx.crashed=true;
     state.energy = clamp(state.energy - 10, 0, 100);
   }
 
+  // Job simulation
   if(state.job){
     const dtMin = dtMs / 60000;
 
@@ -1792,11 +1799,14 @@ function step(ts){
     state.jobDistDone = clamp(state.jobDistDone + distInc, 0, state.jobDistTotal);
     state.jobElapsedMin += dtMin;
 
+    // energy drain
     const drain = energyDrainPerMinute(state.speed) * dtMin;
     state.energy = clamp(state.energy - drain, 0, 100);
 
+    // time advances with job
     advanceMinutes(dtMin);
 
+    // update UI
     const pct = state.jobDistTotal>0 ? (state.jobDistDone/state.jobDistTotal) : 0;
     $("pct").textContent = Math.round(pct*100)+"%";
     $("fill").style.width = (pct*100)+"%";
@@ -1805,20 +1815,25 @@ function step(ts){
     $("mph").textContent = Math.round(mph)+" mph";
 
     updateTimeDialFromDeadline();
+
+    // occasional optional prompt
     maybeTriggerOptionalEvent();
 
+    // forced random event (not optional): mild chance, worse at higher speed
     const abs=nowAbsPrecise();
-    if(abs - state.lastEventAbs > 8){
+    if(abs - state.lastEventAbs > 8){ // spacing
       const chance = 0.012 + (state.speed-1) * 0.006;
       if(Math.random() < chance){
         applyRandomEvent(false);
       }
     }
 
+    // end job if complete
     if(state.jobDistDone >= state.jobDistTotal - 1e-6){
       completeJob();
     }
 
+    // energy collapse: if 0, slow to very slow automatically
     if(state.energy<=0){
       state.speed = 1;
       updateSpeedUI();
@@ -1871,6 +1886,7 @@ function clickOptionalEvent(){
 
 /* =================== WIRES =================== */
 function wireButtons(){
+  // hub navigation
   $("goJobs").addEventListener("click", ()=>{
     if(state.offers.length===0) genOffers();
     renderJobs();
@@ -1987,6 +2003,7 @@ function init(){
   updateSpeedUI();
   wireButtons();
 
+  // If no offers yet, keep empty until user enters board or hits refresh
   if(state.offers.length>0) pruneOffers();
 
   resumeToRightScreen();
