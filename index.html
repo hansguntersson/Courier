@@ -129,7 +129,7 @@
 
     .timeLeftWrap{margin-top:16px;display:flex;align-items:center;justify-content:center;color:var(--accent);}
     .timeDial{width:176px;height:176px;flex:0 0 auto;display:block;}
-    .timeDial circle,.timeDial path{vector-effect: non-scaling-stroke;}
+    .timeDial circle{vector-effect: non-scaling-stroke;}
     .timeDial text{font-family:var(--mono);fill:var(--accent);text-anchor:middle;dominant-baseline:middle;}
     .timeDial .dialK{font-size:8px;font-weight:900;letter-spacing:.8px;opacity:.9;}
     .timeDial .dialV{font-size:12px;font-weight:950;}
@@ -402,12 +402,6 @@
         </svg>
         <span>Snack — £<span id="snackPrice"></span> (<span id="snackCount"></span>/5)</span>
       </button>
-
-      <div class="resultBox">
-        <div class="vlist">
-          <div class="vrow"><span>Cash</span><span id="shopCash">£0</span></div>
-        </div>
-      </div>
     </div>
 
     <!-- JOB BOARD -->
@@ -456,7 +450,11 @@
       <div class="timeLeftWrap">
         <svg class="timeDial" viewBox="0 0 100 100" aria-label="Time left">
           <circle cx="50" cy="50" r="38" stroke="var(--accent)" stroke-width="14" fill="none" opacity="0.18"></circle>
-          <path id="timeArc" stroke="var(--accent)" stroke-width="16" fill="none" stroke-linecap="butt" d=""></path>
+          <!-- time left ring (dash-based; rotated to start at 12 o'clock) -->
+          <circle id="timeRing" cx="50" cy="50" r="38"
+                  stroke="var(--accent)" stroke-width="16" fill="none"
+                  stroke-linecap="butt"
+                  transform="rotate(-90 50 50)"></circle>
           <text class="dialK" x="50" y="45">TIME LEFT</text>
           <text class="dialV" id="remaining" x="50" y="57">—</text>
         </svg>
@@ -960,24 +958,6 @@ function setAccentFromTime(){
   }
 }
 
-/* SVG arc helpers */
-function polarToCartesian(cx, cy, r, angleDeg){
-  const rad=(angleDeg-90) * Math.PI/180;
-  return {x: cx + (r*Math.cos(rad)), y: cy + (r*Math.sin(rad))};
-}
-
-/* Consistent clockwise arc */
-function describeArcCW(cx, cy, r, startAngle, endAngle){
-  const start = polarToCartesian(cx, cy, r, startAngle);
-  const end = polarToCartesian(cx, cy, r, endAngle);
-  const largeArcFlag = (endAngle - startAngle) <= 180 ? "0" : "1";
-  const sweepFlag = "1"; // clockwise
-  return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} ${sweepFlag} ${end.x} ${end.y}`;
-}
-function describeFullCircleCW(cx, cy, r){
-  return `${describeArcCW(cx,cy,r,0,180)} ${describeArcCW(cx,cy,r,180,360)}`;
-}
-
 /* =================== UI ROUTING =================== */
 function setMode(m){
   ["hub","clients","stats","shop","board","offer","job","result","end"].forEach(id=>{
@@ -1024,6 +1004,20 @@ function updateEventBtnUI(){
   }
 }
 
+function setBtnAvailability(el, available){
+  if(!el) return;
+  el.disabled = !available;
+  el.classList.toggle("btn", available);
+  el.classList.toggle("btnOutline", !available);
+}
+
+function updateShopButtons(){
+  const drinkAvailable = (state.cash >= PRICES.drink) && (state.drinks < 5);
+  const snackAvailable = (state.cash >= PRICES.snack) && (state.snacks < 5);
+  setBtnAvailability($("buyDrink"), drinkAvailable);
+  setBtnAvailability($("buySnack"), snackAvailable);
+}
+
 function updateConsumablesModal(){
   const d=$("drinkBtn");
   const s=$("snackBtn");
@@ -1051,16 +1045,16 @@ function renderTop(){
   $("kpiWeekBottom").textContent = "Week "+weekNumber()+", Day "+state.day;
   $("kpiCashTop").textContent = "Cash: £"+state.cash;
   $("kpiTargetBottom").textContent = "£"+WEEKLY_TARGET+" due friday";
-  $("shopCash").textContent = "£"+state.cash;
 
-  $("drinkPrice").textContent = PRICES.drink;
-  $("snackPrice").textContent = PRICES.snack;
-  $("drinkCount").textContent = state.drinks;
-  $("snackCount").textContent = state.snacks;
+  const dp=$("drinkPrice"); if(dp) dp.textContent = PRICES.drink;
+  const sp=$("snackPrice"); if(sp) sp.textContent = PRICES.snack;
+  const dc=$("drinkCount"); if(dc) dc.textContent = state.drinks;
+  const sc=$("snackCount"); if(sc) sc.textContent = state.snacks;
 
   renderEnergyBar();
   updateEventBtnUI();
   updateConsumablesModal();
+  updateShopButtons();
 }
 
 /* =================== CLIENTS / STATS =================== */
@@ -1302,11 +1296,6 @@ function genOffers(){
 
 let selectedOffer=null;
 
-function minMinutesAtVeryFast(dist){
-  const mph = BASE_MPH * SPEEDS[5].mult;
-  return (dist / mph) * 60;
-}
-
 function openOffer(o){
   selectedOffer=o;
 
@@ -1317,11 +1306,6 @@ function openOffer(o){
   $("ofRoute").textContent = o.route;
   $("ofPay").textContent = "£"+o.pay;
   $("ofDeadline").textContent = fmtClock(o.deadlineAbs % 1440);
-
-  // FIX 1: disable accept if expired or not realistically doable at very fast
-  const now = nowAbsPrecise();
-  const left = o.deadlineAbs - now;
-  $("offerAccept").disabled = (left <= 0 || left < minMinutesAtVeryFast(o.dist));
 
   setOfferAvatar(o.who);
 
@@ -1370,16 +1354,6 @@ function energyDrainPerMinute(s){
 function acceptOffer(){
   if(!selectedOffer) return;
 
-  // FIX 1: hard-block expired/impossible offers at accept-time too
-  const now = nowAbsPrecise();
-  const left = selectedOffer.deadlineAbs - now;
-  if(left <= 0 || left < minMinutesAtVeryFast(selectedOffer.dist)){
-    setMode("board");
-    renderJobs();
-    renderTop();
-    return;
-  }
-
   state.stats.accepted++;
   recordClientAccept(selectedOffer);
 
@@ -1423,7 +1397,8 @@ function showResult(completed, title, tipOrPenalty, outcome){
   const rows=[];
 
   const pay = completed ? state.job.pay : 0;
-  const avgMph = state.jobElapsedMin>0 ? (state.jobDistDone*60/state.jobElapsedMin) : 0;
+  const distForAvg = completed ? state.jobDistTotal : state.jobDistDone;
+  const avgMph = state.jobElapsedMin>0 ? (distForAvg*60/state.jobElapsedMin) : 0;
 
   if(completed){
     rows.push(`<div class="vrow"><span>Pay</span><span>£${pay}</span></div>`);
@@ -1492,11 +1467,8 @@ function completeJob(){
 
   showResult(true, "Complete", tipOrPenalty, late ? "late" : (tipOrPenalty>0 ? "early" : "ontime"));
 
-  // remove offer instance (or keep if repeat but regenerate list anyway)
   state.job = null;
 
-  // If it’s already after midnight, show EOD immediately
-  if(minutesOfDay() < 1){ /* unlikely; guard */ }
   saveState(true);
 }
 
@@ -1548,25 +1520,23 @@ function applyRandomEvent(fromOptional=false){
 
 function updateTimeDialFromDeadline(){
   if(!state.job) return;
-  const arc=$("timeArc");
-  const rem=$("remaining");
-  const cx=50, cy=50, r=38;
 
-  const now=nowAbsPrecise();
-  const total=Math.max(0.000001, state.job.deadlineAbs - state.jobStartAbs);
-  const left=Math.max(0, state.job.deadlineAbs - now);
-  const fracLeft=clamp(left/total, 0, 1);
+  const ring = $("timeRing");
+  const rem  = $("remaining");
+  if(!ring || !rem) return;
 
-  if(left<=0){
-    arc.setAttribute("d","");
-    arc.style.opacity="0";
-  }else if(fracLeft >= 0.999999){
-    arc.setAttribute("d", describeFullCircleCW(cx,cy,r));
-    arc.style.opacity="1";
-  }else{
-    arc.setAttribute("d", describeArcCW(cx,cy,r,0,360*fracLeft));
-    arc.style.opacity="1";
-  }
+  const r = 38;
+  const C = 2 * Math.PI * r;
+
+  const now = nowAbsPrecise();
+  const total = Math.max(0.000001, state.job.deadlineAbs - state.jobStartAbs);
+  const left  = Math.max(0, state.job.deadlineAbs - now);
+  const fracLeft = clamp(left / total, 0, 1);
+
+  ring.style.strokeDasharray = String(C);
+  ring.style.strokeDashoffset = String(C * (1 - fracLeft));
+  ring.style.opacity = left <= 0 ? "0" : "1";
+
   rem.textContent = Math.max(0, Math.ceil(left))+"m";
 }
 
@@ -1583,7 +1553,6 @@ function useDrink(){
   if(now < state.drinkCdUntil) return;
 
   state.drinks--;
-  state.stats.spent += 0; // purchase already tracked
   state.energy = clamp(state.energy + 20, 0, 100);
 
   state.drinkFx = { crashAt: now + 15000, crashed:false };
@@ -1813,7 +1782,6 @@ function step(ts){
     const distInc = mph * dtMin;
 
     state.jobDistDone = clamp(state.jobDistDone + distInc, 0, state.jobDistTotal);
-    state.jobElapsedMin += dtMin;
 
     // energy drain
     const drain = energyDrainPerMinute(state.speed) * dtMin;
@@ -1821,6 +1789,9 @@ function step(ts){
 
     // time advances with job
     advanceMinutes(dtMin);
+
+    // elapsed derived from absolute time (avoids drift)
+    state.jobElapsedMin = Math.max(0, nowAbsPrecise() - state.jobStartAbs);
 
     // update UI
     const pct = state.jobDistTotal>0 ? (state.jobDistDone/state.jobDistTotal) : 0;
