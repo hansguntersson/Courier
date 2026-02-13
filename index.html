@@ -209,16 +209,6 @@
   <div class="screen hidden" id="job">
     <div class="offerHeader" id="jobName">—</div>
 
-    <div class="timeLeftWrap">
-      <svg class="timeDial" viewBox="0 0 100 100" aria-label="Time left">
-        <circle cx="50" cy="50" r="38" stroke="var(--accent)" stroke-width="14" fill="none" opacity="0.18"></circle>
-        <path id="overdueArc" stroke="var(--accent)" stroke-width="16" fill="none" stroke-linecap="butt" d=""></path>
-        <path id="timeArc" stroke="var(--accent)" stroke-width="16" fill="none" stroke-linecap="butt" d=""></path>
-        <text class="dialK" id="timeLabel" x="50" y="45">TIME LEFT</text>
-        <text class="dialV" id="remaining" x="50" y="57">—</text>
-      </svg>
-    </div>
-
     <div class="progressBlock">
       <div class="row progressHead">
         <div class="progressLabel">Progress</div>
@@ -230,6 +220,16 @@
         <div id="mph">0 mph</div>
         <div id="milesLeft">0.0 mi</div>
       </div>
+    </div>
+
+    <div class="timeLeftWrap">
+      <svg class="timeDial" viewBox="0 0 100 100" aria-label="Time left">
+        <circle cx="50" cy="50" r="38" stroke="var(--accent)" stroke-width="14" fill="none" opacity="0.18"></circle>
+        <path id="overdueArc" stroke="var(--accent)" stroke-width="16" fill="none" stroke-linecap="butt" d=""></path>
+        <path id="timeArc" stroke="var(--accent)" stroke-width="16" fill="none" stroke-linecap="butt" d=""></path>
+        <text class="dialK" id="timeLabel" x="50" y="45">TIME LEFT</text>
+        <text class="dialV" id="remaining" x="50" y="57">—</text>
+      </svg>
     </div>
   </div>
 
@@ -346,6 +346,8 @@ const REQUESTORS = window.CourierData.REQUESTORS;
 const REPUTATION = window.CourierData.REPUTATION;
 const EVENT_POOL = window.CourierData.EVENT_POOL;
 const PROMPT_EVENTS = window.CourierData.PROMPT_EVENTS;
+const END_OF_DAY_POSITIVES = window.CourierData.END_OF_DAY_POSITIVES;
+const END_OF_DAY_NEGATIVES = window.CourierData.END_OF_DAY_NEGATIVES;
 const SAVE_KEY = window.CourierData.SAVE_KEY;
 const SAVE_SCHEMA = window.CourierData.SAVE_SCHEMA;
 
@@ -926,6 +928,20 @@ function renderTop(){
   updateConsumablesModal();
 }
 
+function pickEodRandoms(){
+  const r=Math.random();
+  let n=0;
+  if(r<0.50) n=0; else if(r<0.85) n=1; else n=2;
+  const out=[];
+  for(let i=0;i<n;i++){
+    const useNeg=Math.random()<0.70;
+    const arr=useNeg ? END_OF_DAY_NEGATIVES : END_OF_DAY_POSITIVES;
+    const item=arr[Math.floor(Math.random()*arr.length)];
+    out.push({ t: item.t, amt: useNeg ? -item.amt : item.amt });
+  }
+  return out;
+}
+
 function snapshotEOD(){
   const dayEnded = state.day-1;
   const rent = isFridayDayNumber(dayEnded) ? WEEKLY_RENT : 0;
@@ -936,7 +952,8 @@ function snapshotEOD(){
     shopSpent: Math.round(state.dayShopSpend||0),
     bills: COSTS.bills,
     food: COSTS.food,
-    rent
+    rent,
+    randoms: pickEodRandoms()
   };
 }
 function showEndOfDay(){
@@ -946,9 +963,13 @@ function showEndOfDay(){
   const food=state.eod.food;
   const rent=state.eod.rent;
   const shop=state.eod.shopSpent;
+  const randoms=state.eod.randoms||[];
 
   const deductions = bills + food + rent + shop;
-  const net = state.eod.earnings - deductions;
+  const randomsSum=randoms.reduce(function(s,o){ return s+o.amt; },0);
+  const net = state.eod.earnings - deductions + randomsSum;
+  /* Cash after day = current cash (already has +earnings -shop) minus bills/food/rent, plus randoms */
+  const cashAfterDay = state.cash - (bills + food + rent) + randomsSum;
 
   elText("endTitle","End of day (Day "+state.eod.dayEnded+")");
   const endList=$("endList");
@@ -960,7 +981,11 @@ function showEndOfDay(){
     rows.push(`<div class="vrow"><span>Bills</span><span>-£${Number(bills)}</span></div>`);
     rows.push(`<div class="vrow"><span>Food</span><span>-£${Number(food)}</span></div>`);
     if(rent>0) rows.push(`<div class="vrow"><span>Rent</span><span>-£${Number(rent)}</span></div>`);
-    rows.push(`<div class="vrow total"><span>Net</span><span>£${Number(net)}</span></div>`);
+    randoms.forEach(function(o){
+      rows.push(`<div class="vrow"><span>${escapeHtml(o.t)}</span><span>${o.amt>=0 ? "£"+Number(o.amt) : "-£"+Number(-o.amt)}</span></div>`);
+    });
+    rows.push(`<div class="vrow total"><span>Net (today)</span><span>${net>=0 ? "£"+Number(net) : "-£"+Number(-net)}</span></div>`);
+    rows.push(`<div class="vrow total"><span>Cash (after day)</span><span>${cashAfterDay>=0 ? "£"+Number(cashAfterDay) : "-£"+Number(-cashAfterDay)}</span></div>`);
     endList.innerHTML=rows.join("");
   }
 
@@ -1796,12 +1821,16 @@ on("restMorning","click", restUntilMorning);
 on("confirmEnd","click", ()=>{
   if(!state.eod) snapshotEOD();
   const deductions = (state.eod.bills||0) + (state.eod.food||0) + (state.eod.rent||0);
+  const randoms=state.eod.randoms||[];
+  const randomsSum=randoms.reduce(function(s,o){ return s+o.amt; },0);
 
   initClientsIfNeeded();
   state.stats.spent += deductions;
+  randoms.forEach(function(o){ if(o.amt<0) state.stats.spent += -o.amt; });
 
   /* Shop spend was already deducted at purchase-time; don't deduct again here. */
   state.cash -= deductions;
+  state.cash += randomsSum;
 
   state.jobsDone=0;
   state.dayEarnings=0;
