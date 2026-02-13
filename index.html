@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Courier v1.0.43</title>
+  <title>Courier</title>
   <style>
     :root{
       color-scheme: dark;
@@ -341,7 +341,7 @@
 <div class="safe">
   <div class="top">
     <h1>Courier</h1>
-    <div class="headerClock" id="headerClock">15:00</div>
+    <div class="headerClock" id="headerClock">08:00</div>
   </div>
 
   <div class="divider"></div>
@@ -355,7 +355,7 @@
       </div>
       <div class="kpiCell kpiRight">
         <div class="kpiBig" id="kpiCashTop">Cash: £0</div>
-        <div class="kpiSmall" id="kpiTargetBottom">£500 due friday</div>
+        <div class="kpiSmall" id="kpiTargetBottom">£1000 due friday</div>
       </div>
     </div>
     <div class="divider"></div>
@@ -654,11 +654,11 @@
 <script>
 "use strict";
 
-const VERSION="1.0.43";
-const WEEKLY_TARGET=500;
+const VERSION="1.0.44";
+const WEEKLY_TARGET=1000;
 
 const PRICES={drink:12,snack:6};
-const COSTS={rent:35,food:15};
+const COSTS={bills:35,food:15,weeklyRent:1000};
 
 const SPEEDS={
   1:{name:"very slow",mult:0.55},
@@ -871,7 +871,7 @@ const SAVE_KEY="courier_save";
 const SAVE_SCHEMA=3;
 
 const state={
-  day:1,cash:0,time:15*60,energy:100,speed:3,
+  day:1,cash:0,time:8*60,energy:100,speed:3,
   snacks:1,drinks:1,
   jobsDone:0,dayEarnings:0,
   offers:[],job:null,
@@ -1301,21 +1301,41 @@ function renderTop(){
   updateConsumablesModal();
 }
 
-function snapshotEOD(){
-  state.eod={dayEnded: state.day-1, jobs: state.jobsDone, earnings: state.dayEarnings, rent: COSTS.rent, food: COSTS.food};
+function dayIsFriday(dayNumber){
+  return ((dayNumber-1)%7)===4;
 }
+
+function snapshotEOD(){
+  const dayEnded = state.day-1;
+  const friday = dayIsFriday(dayEnded);
+  state.eod={
+    dayEnded,
+    jobs: state.jobsDone,
+    earnings: state.dayEarnings,
+    bills: COSTS.bills,
+    food: COSTS.food,
+    rent: friday ? COSTS.weeklyRent : 0
+  };
+}
+
 function showEndOfDay(){
   if(!state.eod) snapshotEOD();
-  const deductions=state.eod.rent+state.eod.food;
+  const deductions=state.eod.bills+state.eod.food+state.eod.rent;
   const net=state.eod.earnings-deductions;
+
   elText("endTitle","End of day (Day "+state.eod.dayEnded+")");
   const endList=$("endList");
   if(endList){
+    const rentRow = state.eod.rent>0
+      ? `<div class="vrow"><span>Rent</span><span>-£${state.eod.rent}</span></div>`
+      : ``;
+
     endList.innerHTML=`
       <div class="vrow"><span>Jobs</span><span>${state.eod.jobs}</span></div>
       <div class="vrow"><span>Earnings</span><span>£${state.eod.earnings}</span></div>
-      <div class="vrow"><span>Rent</span><span>-£${state.eod.rent}</span></div>
+      <div class="vrow"><span>Bills</span><span>-£${state.eod.bills}</span></div>
       <div class="vrow"><span>Food</span><span>-£${state.eod.food}</span></div>
+      ${rentRow}
       <div class="vrow total"><span>Net</span><span>£${net}</span></div>
     `;
   }
@@ -1420,7 +1440,9 @@ function renderJobs(){
   wrap.innerHTML="";
   const noEnergy=state.energy<=0;
 
-  state.offers.forEach(o=>{
+  const sorted=[...state.offers].sort((a,b)=>a.deadlineAbs-b.deadlineAbs);
+
+  sorted.forEach(o=>{
     const r=document.createElement("div");
     r.className="jobRow";
     r.innerHTML=`
@@ -2088,7 +2110,7 @@ on("eventBtn","click", ()=>{
 /* Rest */
 function canUntilMorning(){
   const m=minutesOfDay();
-  return (m>=18*60 || m<6*60);
+  return (m>=18*60 || m<8*60);
 }
 function openRest(){
   const btn=$("restMorning");
@@ -2122,8 +2144,8 @@ function restUntilMorning(){
   if(!canUntilMorning()) return;
   const before=nowAbs();
   const m=minutesOfDay();
-  if(m<6*60) advanceMinutes((6*60)-m);
-  else advanceMinutes((1440-m)+(6*60));
+  if(m<8*60) advanceMinutes((8*60)-m);
+  else advanceMinutes((1440-m)+(8*60));
   const after=nowAbs();
   const sleptHours=Math.max(0,(after-before)/60);
   state.energy = clamp(state.energy + sleptHours, 0, 100);
@@ -2142,7 +2164,7 @@ on("restMorning","click", restUntilMorning);
 
 on("confirmEnd","click", ()=>{
   if(!state.eod) snapshotEOD();
-  const deductions=state.eod.rent+state.eod.food;
+  const deductions=state.eod.bills+state.eod.food+state.eod.rent;
 
   initClientsIfNeeded();
   state.stats.spent += deductions;
@@ -2154,7 +2176,7 @@ on("confirmEnd","click", ()=>{
   state.eod=null;
 
   state.energy=100;
-  state.time = 6*60;
+  state.time = 8*60;
 
   setMode("hub");
   renderTop();
@@ -2171,7 +2193,7 @@ function hardResetGame(){
   const cm=$("energyModal"); if(cm) cm.style.display="none";
   const rm=$("restModal"); if(rm) rm.style.display="none";
 
-  state.day=1; state.cash=0; state.time=15*60; state.energy=100; state.speed=3;
+  state.day=1; state.cash=0; state.time=8*60; state.energy=100; state.speed=3;
   state.snacks=1; state.drinks=1;
 
   state.jobsDone=0; state.dayEarnings=0;
@@ -2205,7 +2227,7 @@ buildSpeed();
 
 const loaded = loadState();
 renderTop();
-document.title="Courier v"+VERSION;
+document.title="Courier";
 
 if(state.job){
   startJob(state.job, true);
