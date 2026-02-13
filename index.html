@@ -326,6 +326,12 @@
 <script>
 "use strict";
 
+/* Guard: require data.js to be loaded */
+if(!window.CourierData){
+  document.body.innerHTML="<p style=\"padding:2rem;text-align:center;font-family:system-ui,sans-serif;\">Courier could not load (missing data.js). Check that data.js is in the same folder and reload.</p>";
+  throw new Error("CourierData missing");
+}
+
 /* Game data from data.js */
 const VERSION = window.CourierData.VERSION;
 const WEEKLY_TARGET = window.CourierData.WEEKLY_TARGET;
@@ -345,9 +351,10 @@ const SAVE_SCHEMA = window.CourierData.SAVE_SCHEMA;
 
 /* ===== UNIQUE AVATARS (vectors) ===== */
 function avatarSvg(who, color="currentColor"){
+  const safeColor=escapeHtml(String(color));
   if(who==="Sam Patel"){
     return `
-      <svg viewBox="0 0 24 24" aria-hidden="true" style="color:${color}">
+      <svg viewBox="0 0 24 24" aria-hidden="true" style="color:${safeColor}">
         <path d="M12 3l7 4v10l-7 4-7-4V7l7-4Z"></path>
         <path d="M9 9c1.3-1.3 4.7-1.3 6 0"></path>
         <path d="M9 15c1.3 1.3 4.7 1.3 6 0"></path>
@@ -355,14 +362,14 @@ function avatarSvg(who, color="currentColor"){
   }
   if(who==="Rosa Klein"){
     return `
-      <svg viewBox="0 0 24 24" aria-hidden="true" style="color:${color}">
+      <svg viewBox="0 0 24 24" aria-hidden="true" style="color:${safeColor}">
         <path d="M12 3l2.2 5.2 5.6.5-4.2 3.6 1.3 5.4L12 15.6 7.1 17.7l1.3-5.4-4.2-3.6 5.6-.5L12 3Z"></path>
         <circle cx="12" cy="12" r="1.8"></circle>
       </svg>`;
   }
   if(who==="Aisha Rahman"){
     return `
-      <svg viewBox="0 0 24 24" aria-hidden="true" style="color:${color}">
+      <svg viewBox="0 0 24 24" aria-hidden="true" style="color:${safeColor}">
         <path d="M15.5 4.8c-4.2.8-7.3 4.5-7.1 8.9.1 2.6 1.2 4.7 3.1 6.1 3.8.2 7.2-2.2 8.1-5.8"></path>
         <path d="M16.8 8.2l3 3"></path>
         <path d="M19.8 8.2l-3 3"></path>
@@ -370,7 +377,7 @@ function avatarSvg(who, color="currentColor"){
   }
   /* Tom Weaver */
   return `
-    <svg viewBox="0 0 24 24" aria-hidden="true" style="color:${color}">
+    <svg viewBox="0 0 24 24" aria-hidden="true" style="color:${safeColor}">
       <rect x="5" y="6" width="14" height="12" rx="2"></rect>
       <path d="M8 9h8"></path>
       <path d="M8 12h8"></path>
@@ -442,8 +449,25 @@ const on=(id, evt, fn)=>{
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const elText=(id, txt)=>{ const el=$(id); if(el) el.textContent=txt; };
 
-function minutesOfDay(){ return ((Math.floor(state.time)%1440)+1440)%1440; }
-function minutesOfDayPrecise(){ return ((state.time%1440)+1440)%1440; }
+/** Escape for safe use in HTML (prevents XSS from save/custom data). */
+function escapeHtml(str){
+  if(str==null || str===undefined) return "";
+  const s=String(str);
+  const div=document.createElement("div");
+  div.textContent=s;
+  return div.innerHTML;
+}
+
+function minutesOfDay(){
+  const t=state.time;
+  if(typeof t!=="number" || Number.isNaN(t)) return 0;
+  return ((Math.floor(t)%1440)+1440)%1440;
+}
+function minutesOfDayPrecise(){
+  const t=state.time;
+  if(typeof t!=="number" || Number.isNaN(t)) return 0;
+  return ((t%1440)+1440)%1440;
+}
 function nowAbs(){ return (state.day-1)*1440 + minutesOfDay(); }
 function nowAbsPrecise(){ return (state.day-1)*1440 + minutesOfDayPrecise(); }
 
@@ -488,6 +512,7 @@ function lerpColor(c1,c2,t){
 }
 function setAccentFromTime(){
   const m=minutesOfDay();
+  if(typeof m!=="number" || Number.isNaN(m)) return;
   const stops=[
     {m:  360, c:"#B8C9CA"},
     {m:  600, c:"#C1E7B8"},
@@ -530,12 +555,18 @@ function initClientsIfNeeded(){
 }
 
 function recordClientAccept(job){
+  if(!job||!job.who) return;
+  initClientsIfNeeded();
   const st=state.clientStats[job.who];
+  if(!st) return;
   st.accepted++;
 }
 function recordClientComplete(job, tp, total){
+  if(!job) return;
   const who=job.who;
+  initClientsIfNeeded();
   const st=state.clientStats[who];
+  if(!st) return;
   st.completed++;
   st.revenue += job.pay;
   if(tp>0) st.tips += tp;
@@ -548,8 +579,11 @@ function recordClientComplete(job, tp, total){
   if(!job.repeat) state.completedOneOffs[job.id]=true;
 }
 function recordClientAbort(job, penAbs){
+  if(!job) return;
   const who=job.who;
+  initClientsIfNeeded();
   const st=state.clientStats[who];
+  if(!st) return;
   st.aborted++;
   st.penalties += penAbs;
   st.net -= penAbs;
@@ -575,21 +609,21 @@ function renderClients(){
     const card=document.createElement("div");
     card.className="clientCard";
     card.innerHTML=`
-      <div class="clientName">${who}</div>
+      <div class="clientName">${escapeHtml(who)}</div>
       <div class="clientGrid">
-        <div><div class="k">COMPLETED</div><div class="v">${st.completed}</div></div>
-        <div><div class="k">ABORTED</div><div class="v">${st.aborted}</div></div>
+        <div><div class="k">COMPLETED</div><div class="v">${Number(st.completed)}</div></div>
+        <div><div class="k">ABORTED</div><div class="v">${Number(st.aborted)}</div></div>
 
-        <div><div class="k">REVENUE</div><div class="v">£${st.revenue}</div></div>
-        <div><div class="k">NET PAY</div><div class="v">£${st.net}</div></div>
+        <div><div class="k">REVENUE</div><div class="v">£${Number(st.revenue)}</div></div>
+        <div><div class="k">NET PAY</div><div class="v">£${Number(st.net)}</div></div>
 
-        <div><div class="k">TIPS</div><div class="v">£${st.tips}</div></div>
-        <div><div class="k">PENALTIES</div><div class="v">£${st.penalties}</div></div>
+        <div><div class="k">TIPS</div><div class="v">£${Number(st.tips)}</div></div>
+        <div><div class="k">PENALTIES</div><div class="v">£${Number(st.penalties)}</div></div>
 
         <div class="wide"><div class="clientDivider"></div></div>
 
-        <div><div class="k">SEQUENCE</div><div class="v">${seq}</div></div>
-        <div><div class="k">REPUTATION</div><div class="v">${rep}/10</div></div>
+        <div><div class="k">SEQUENCE</div><div class="v">${Number(seq)}</div></div>
+        <div><div class="k">REPUTATION</div><div class="v">${Number(rep)}/10</div></div>
       </div>
     `;
     wrap.appendChild(card);
@@ -607,25 +641,25 @@ function renderStats(){
   if(!list) return;
 
   list.innerHTML=`
-    <div class="vrow"><span>Version</span><span>v${VERSION}</span></div>
-    <div class="vrow"><span>Day</span><span>Day ${state.day}</span></div>
-    <div class="vrow"><span>Week</span><span>${weekNumber()}</span></div>
+    <div class="vrow"><span>Version</span><span>v${escapeHtml(VERSION)}</span></div>
+    <div class="vrow"><span>Day</span><span>Day ${Number(state.day)}</span></div>
+    <div class="vrow"><span>Week</span><span>${Number(weekNumber())}</span></div>
 
-    <div class="vrow"><span>Miles driven</span><span>${state.stats.miles.toFixed(1)} mi</span></div>
-    <div class="vrow"><span>Average speed</span><span>${avgSpeedOverall().toFixed(1)} mph</span></div>
+    <div class="vrow"><span>Miles driven</span><span>${Number(state.stats.miles).toFixed(1)} mi</span></div>
+    <div class="vrow"><span>Average speed</span><span>${Number(avgSpeedOverall()).toFixed(1)} mph</span></div>
 
     <div class="vrow"><span>Total money made</span><span>£${Math.round(state.stats.made)}</span></div>
     <div class="vrow"><span>Total money spent</span><span>£${Math.round(state.stats.spent)}</span></div>
 
-    <div class="vrow"><span>Jobs accepted</span><span>${state.stats.accepted}</span></div>
-    <div class="vrow"><span>Jobs completed</span><span>${state.stats.completed}</span></div>
-    <div class="vrow"><span>Jobs aborted</span><span>${state.stats.aborted}</span></div>
+    <div class="vrow"><span>Jobs accepted</span><span>${Number(state.stats.accepted)}</span></div>
+    <div class="vrow"><span>Jobs completed</span><span>${Number(state.stats.completed)}</span></div>
+    <div class="vrow"><span>Jobs aborted</span><span>${Number(state.stats.aborted)}</span></div>
 
-    <div class="vrow"><span>Jobs early</span><span>${state.stats.early}</span></div>
-    <div class="vrow"><span>Jobs late</span><span>${state.stats.late}</span></div>
+    <div class="vrow"><span>Jobs early</span><span>${Number(state.stats.early)}</span></div>
+    <div class="vrow"><span>Jobs late</span><span>${Number(state.stats.late)}</span></div>
 
-    <div class="vrow"><span>Snacks eaten</span><span>${state.stats.snacks}</span></div>
-    <div class="vrow"><span>Events encountered</span><span>${state.stats.events}</span></div>
+    <div class="vrow"><span>Snacks eaten</span><span>${Number(state.stats.snacks)}</span></div>
+    <div class="vrow"><span>Events encountered</span><span>${Number(state.stats.events)}</span></div>
   `;
 }
 
@@ -634,7 +668,7 @@ function safeJsonParse(s){ try{ return JSON.parse(s); }catch(e){ return null; } 
 
 function saveState(force=false){
   const now=performance.now();
-  if(!force && (now-lastSaveMs)<900) return;
+  if(!force && (now-lastSaveMs)<2500) return;
   lastSaveMs=now;
 
   const payload={
@@ -699,6 +733,16 @@ function loadState(){
   state.startEnergy = (typeof s.startEnergy==="number") ? s.startEnergy : state.energy;
   state.energySpentJob = (typeof s.energySpentJob==="number") ? s.energySpentJob : 0;
   state.jobStartAbs = (typeof s.jobStartAbs==="number") ? s.jobStartAbs : nowAbsPrecise();
+
+  /* Reject malformed saved job so we don't crash on resume */
+  if(state.job && typeof state.job!=="object"){
+    state.job=null;
+  } else if(state.job){
+    const j=state.job;
+    if(typeof j.deadlineAbs!=="number"||typeof j.dist!=="number"||typeof j.hidden!=="number"||typeof j.pay!=="number"||!j.who||!j.fb){
+      state.job=null;
+    }
+  }
 
   state.pendingEndOfDay = !!s.pendingEndOfDay;
   state.eod = (s.eod && typeof s.eod==="object") ? s.eod : null;
@@ -858,12 +902,12 @@ function updateConsumablesModal(){
 
   if(d){
     const cdText = drinkCdLeft>0 ? ` (cooldown ${Math.ceil(drinkCdLeft/1000)}s)` : "";
-    d.innerHTML=`Energy Drink x ${state.drinks}<span class="sub">+20% energy immediately then 10% crash after 15s${cdText}</span>`;
+    d.innerHTML=`Energy Drink x ${Number(state.drinks)}<span class="sub">+20% energy immediately then 10% crash after 15s${escapeHtml(cdText)}</span>`;
     d.disabled = (state.drinks<=0) || (drinkCdLeft>0);
   }
   if(s){
     const cdText = snackCdLeft>0 ? ` (cooldown ${Math.ceil(snackCdLeft/1000)}s)` : "";
-    s.innerHTML=`Snack x ${state.snacks}<span class="sub">15s delay, then + energy each second for 15s${cdText}</span>`;
+    s.innerHTML=`Snack x ${Number(state.snacks)}<span class="sub">15s delay, then + energy each second for 15s${escapeHtml(cdText)}</span>`;
     s.disabled = (state.snacks<=0) || (snackCdLeft>0);
   }
 }
@@ -910,13 +954,13 @@ function showEndOfDay(){
   const endList=$("endList");
   if(endList){
     const rows=[];
-    rows.push(`<div class="vrow"><span>Jobs</span><span>${state.eod.jobs}</span></div>`);
-    rows.push(`<div class="vrow"><span>Earnings</span><span>£${state.eod.earnings}</span></div>`);
-    if(shop>0) rows.push(`<div class="vrow"><span>Shop spend</span><span>-£${shop}</span></div>`);
-    rows.push(`<div class="vrow"><span>Bills</span><span>-£${bills}</span></div>`);
-    rows.push(`<div class="vrow"><span>Food</span><span>-£${food}</span></div>`);
-    if(rent>0) rows.push(`<div class="vrow"><span>Rent</span><span>-£${rent}</span></div>`);
-    rows.push(`<div class="vrow total"><span>Net</span><span>£${net}</span></div>`);
+    rows.push(`<div class="vrow"><span>Jobs</span><span>${Number(state.eod.jobs)}</span></div>`);
+    rows.push(`<div class="vrow"><span>Earnings</span><span>£${Number(state.eod.earnings)}</span></div>`);
+    if(shop>0) rows.push(`<div class="vrow"><span>Shop spend</span><span>-£${Number(shop)}</span></div>`);
+    rows.push(`<div class="vrow"><span>Bills</span><span>-£${Number(bills)}</span></div>`);
+    rows.push(`<div class="vrow"><span>Food</span><span>-£${Number(food)}</span></div>`);
+    if(rent>0) rows.push(`<div class="vrow"><span>Rent</span><span>-£${Number(rent)}</span></div>`);
+    rows.push(`<div class="vrow total"><span>Net</span><span>£${Number(net)}</span></div>`);
     endList.innerHTML=rows.join("");
   }
 
@@ -1029,9 +1073,9 @@ function renderJobs(){
     r.innerHTML=`
       <div class="jobLeft">
         ${logoHtmlForJobRow(o.who)}
-        <div class="jobTitle">${o.name}</div>
+        <div class="jobTitle">${escapeHtml(o.name)}</div>
       </div>
-      <div class="jobPay">£${o.pay}</div>
+      <div class="jobPay">£${Number(o.pay)}</div>
     `;
     r.addEventListener("click", ()=>{ if(!noEnergy) openOffer(o); });
     if(noEnergy) r.style.opacity=".4";
@@ -1220,10 +1264,10 @@ function openEventFromObj(e){
   if(!list) return;
 
   const rows=[];
-  rows.push(`<div class="vrow"><span>${e.t}</span><span></span></div>`);
-  rows.push(`<div class="vrow"><span style="opacity:.85">${e.d}</span><span></span></div>`);
-  if(e.mins!==0) rows.push(`<div class="vrow"><span>Time</span><span>${e.mins>0?"+":""}${e.mins}m</span></div>`);
-  if(e.energy!==0) rows.push(`<div class="vrow"><span>Energy</span><span>${e.energy>0?"+":""}${e.energy}%</span></div>`);
+  rows.push(`<div class="vrow"><span>${escapeHtml(e.t)}</span><span></span></div>`);
+  rows.push(`<div class="vrow"><span style="opacity:.85">${escapeHtml(e.d)}</span><span></span></div>`);
+  if(e.mins!==0) rows.push(`<div class="vrow"><span>Time</span><span>${e.mins>0?"+":""}${Number(e.mins)}m</span></div>`);
+  if(e.energy!==0) rows.push(`<div class="vrow"><span>Energy</span><span>${e.energy>0?"+":""}${Number(e.energy)}%</span></div>`);
   list.innerHTML=rows.join("");
 
   if(e.mins!==0) advanceMinutes(e.mins);
@@ -1329,8 +1373,11 @@ function tick(ts){
     updateEventBtnUI(); saveState(true);
   }
 
-  const dtSec=(ts-state.lastTs)/1000;
+  let dtSec=(ts-state.lastTs)/1000;
   state.lastTs=ts;
+  /* Cap delta so background tab doesn't warp game in one frame */
+  const MAX_DT_SEC=2;
+  if(dtSec>MAX_DT_SEC||!Number.isFinite(dtSec)) dtSec=MAX_DT_SEC;
 
   const dtMin=dtSec;
   const mult=SPEEDS[state.speed].mult;
@@ -1345,7 +1392,8 @@ function tick(ts){
   state.energy=clamp(state.energy-drain,0,100);
   syncSpeed();
 
-  const p=clamp(state.progress/state.hiddenDuration,0,1);
+  const denom=state.hiddenDuration;
+  const p=denom>0 ? clamp(state.progress/denom,0,1) : 0;
   elText("pct", Math.floor(p*100)+"%");
   const fill=$("fill"); if(fill) fill.style.width=(p*100)+"%";
 
@@ -1395,12 +1443,12 @@ function finish(){
   const rl=$("resultList");
   if(rl){
     rl.innerHTML=`
-      <div class="vrow"><span>Time taken</span><span>${timeTaken}m</span></div>
-      <div class="vrow"><span>Average speed</span><span>${avgSpeed.toFixed(1)} mph</span></div>
-      <div class="vrow"><span>Energy used</span><span>${energyUsed}%</span></div>
-      <div class="vrow"><span>Pay</span><span>£${state.job.pay}</span></div>
-      <div class="vrow"><span>Tip / penalty</span><span>${tp>=0 ? "£"+tp : "-£"+Math.abs(tp)}</span></div>
-      <div class="vrow total"><span>Total</span><span>£${total}</span></div>
+      <div class="vrow"><span>Time taken</span><span>${Number(timeTaken)}m</span></div>
+      <div class="vrow"><span>Average speed</span><span>${Number(avgSpeed).toFixed(1)} mph</span></div>
+      <div class="vrow"><span>Energy used</span><span>${Number(energyUsed)}%</span></div>
+      <div class="vrow"><span>Pay</span><span>£${Number(state.job.pay)}</span></div>
+      <div class="vrow"><span>Tip / penalty</span><span>${tp>=0 ? "£"+Number(tp) : "-£"+Number(Math.abs(tp))}</span></div>
+      <div class="vrow total"><span>Total</span><span>£${Number(total)}</span></div>
     `;
   }
 
@@ -1644,11 +1692,11 @@ on("cancel","click", ()=>{
   const rl=$("resultList");
   if(rl){
     rl.innerHTML=`
-      <div class="vrow"><span>Time taken</span><span>${timeTaken}m</span></div>
-      <div class="vrow"><span>Average speed</span><span>${(timeTaken>0 ? ((miles*60)/timeTaken) : 0).toFixed(1)} mph</span></div>
-      <div class="vrow"><span>Energy used</span><span>${energyUsed}%</span></div>
-      <div class="vrow"><span>Penalty</span><span>-£${penAbs}</span></div>
-      <div class="vrow total"><span>Total</span><span>-£${penAbs}</span></div>
+      <div class="vrow"><span>Time taken</span><span>${Number(timeTaken)}m</span></div>
+      <div class="vrow"><span>Average speed</span><span>${Number(timeTaken>0 ? ((miles*60)/timeTaken) : 0).toFixed(1)} mph</span></div>
+      <div class="vrow"><span>Energy used</span><span>${Number(energyUsed)}%</span></div>
+      <div class="vrow"><span>Penalty</span><span>-£${Number(penAbs)}</span></div>
+      <div class="vrow total"><span>Total</span><span>-£${Number(penAbs)}</span></div>
     `;
   }
 
