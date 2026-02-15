@@ -340,7 +340,8 @@ h1 {
   --courier-w: calc(50px * 453 / 234);
   --courier-h: 50px;
   position: absolute;
-  left: calc(var(--progress) * (100% - 0.75 * var(--courier-w)));
+  /* Start: centre of courier at left edge. End: 75% of courier on track. */
+  left: calc(-1 * var(--courier-w) / 2 + var(--progress) * (100% - 0.25 * var(--courier-w)));
   bottom: 4px;
   width: var(--courier-w);
   height: var(--courier-h);
@@ -498,13 +499,6 @@ h1 {
   transition: top 0.15s ease-out;
 }
 
-.speedMph {
-  font-family: var(--mono);
-  font-size: 14px;
-  font-weight: 900;
-  color: var(--accent);
-}
-
 .dialWrap .dial {
   width: 120px;
   height: 120px;
@@ -584,6 +578,12 @@ h1 {
   padding: 12px 14px;
   font-size: 16px;
   border-radius: 14px;
+}
+
+/* Hidden for now to try UI without: remove display:none to show again */
+#jobControls,
+#speedBar {
+  display: none !important;
 }
 
 .speedbar {

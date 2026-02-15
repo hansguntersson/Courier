@@ -255,7 +255,6 @@
               <div class="speedStep" data-step="5">5</div>
             </div>
           </div>
-          <div class="speedMph" id="speedMph">—</div>
         </div>
       </div>
     </div>
@@ -917,9 +916,6 @@ function updateSpeedDial(){
     el.classList.toggle("active", step===s);
     el.classList.toggle("disabled", step>max);
   });
-  const mult = SPEEDS[s] && SPEEDS[s].mult ? SPEEDS[s].mult : 1;
-  const mph = Math.round(8 * mult);
-  elText("speedMph", mph + " mph");
 }
 
 function weekdayName(){
@@ -1965,7 +1961,10 @@ const loaded = loadState();
 renderTop();
 document.title="Courier";
 
-if(state.job){
+/* Version mismatch or no save: show main menu (hub). Otherwise resume job or hub. */
+if(!loaded){
+  setMode("hub");
+}else if(state.job){
   startJob(state.job, true);
 }else{
   setMode("hub");

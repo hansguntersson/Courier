@@ -227,7 +227,7 @@
   ];
 
   window.CourierData = {
-    VERSION: "1.0.45",
+    VERSION: "1.0.47",
     WEEKLY_TARGET: 1000,
     PRICES: { drink: 12, snack: 6 },
     COSTS: { bills: 35, food: 15 },
