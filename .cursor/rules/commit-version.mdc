@@ -1,0 +1,23 @@
+---
+description: Before local commit, bump VERSION in data.js (Stats screen); version mismatch resets progress and shows hub
+alwaysApply: true
+---
+
+# Commit and version
+
+## Before every local commit
+
+1. **Bump the version number** in `data.js`:
+   - Update `CourierData.VERSION` (e.g. `"1.0.46"` → `"1.0.47"`).
+   - This value is shown on the Stats screen (Version row).
+
+2. **Include the version bump** in the same commit as the code changes (so the stat screen always shows the version that matches the code).
+
+## Version mismatch behaviour (already implemented)
+
+- When saved data has a different `version` than current `VERSION`, the game:
+  - Wipes the save (`wipeSave()`).
+  - Does not load the old state (progress is effectively reset).
+  - Shows the main menu / hub screen.
+
+So after a version bump, returning players get a fresh start and land on the hub.
