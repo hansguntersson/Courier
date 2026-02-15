@@ -214,7 +214,12 @@
         <div class="progressLabel">Progress</div>
         <div class="progressPct" id="pct">0%</div>
       </div>
-      <div class="bar"><div class="fill" id="fill"></div></div>
+      <div class="progressTrack" aria-hidden="true">
+        <div class="progressLine"></div>
+        <div class="courierIcon" id="courierIcon">
+          <div class="courierPng"></div>
+        </div>
+      </div>
       <div class="progressMeta">
         <div id="milesDone">0.0 mi</div>
         <div id="mph">0 mph</div>
@@ -222,14 +227,34 @@
       </div>
     </div>
 
-    <div class="timeLeftWrap">
-      <svg class="timeDial" viewBox="0 0 100 100" aria-label="Time left">
-        <circle cx="50" cy="50" r="38" stroke="var(--accent)" stroke-width="14" fill="none" opacity="0.18"></circle>
-        <path id="overdueArc" stroke="var(--accent)" stroke-width="16" fill="none" stroke-linecap="butt" d=""></path>
-        <path id="timeArc" stroke="var(--accent)" stroke-width="16" fill="none" stroke-linecap="butt" d=""></path>
-        <text class="dialK" id="timeLabel" x="50" y="45">TIME LEFT</text>
-        <text class="dialV" id="remaining" x="50" y="57">—</text>
-      </svg>
+    <div class="dialsRow">
+      <div class="dialsSide dialsLeft">
+        <div class="damageBox" id="damageBox" aria-label="Damage visual"></div>
+      </div>
+      <div class="dialWrap dialWrapTime">
+        <svg class="dial timeDial" viewBox="0 0 100 100" aria-label="Time left">
+          <circle cx="50" cy="50" r="38" stroke="var(--accent)" stroke-width="14" fill="none" opacity="0.18"></circle>
+          <path id="overdueArc" stroke="var(--accent)" stroke-width="16" fill="none" stroke-linecap="butt" d=""></path>
+          <path id="timeArc" stroke="var(--accent)" stroke-width="16" fill="none" stroke-linecap="butt" d=""></path>
+          <text class="dialK" id="timeLabel" x="50" y="45">TIME LEFT</text>
+          <text class="dialV" id="remaining" x="50" y="57">—</text>
+        </svg>
+      </div>
+      <div class="dialsSide dialsRight">
+        <div class="speedStripWrap" id="speedStripWrap" aria-label="Speed 1–5">
+          <div class="speedStripInner">
+            <div class="speedLever" id="speedLever" aria-hidden="true"></div>
+            <div class="speedStrip">
+              <div class="speedStep" data-step="1">1</div>
+              <div class="speedStep" data-step="2">2</div>
+              <div class="speedStep" data-step="3">3</div>
+              <div class="speedStep" data-step="4">4</div>
+              <div class="speedStep" data-step="5">5</div>
+            </div>
+          </div>
+          <div class="speedMph" id="speedMph">—</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -423,7 +448,7 @@ const state={
   dayShopSpend:0,
   offers:[],job:null,
   elapsed:0,progress:0,hiddenDuration:0,startEnergy:100,energySpentJob:0,
-  jobStartAbs:0,
+  jobStartAbs:0,packageDamage:0,
   snackFx:null,drinkFx:null,
   pendingEndOfDay:false,eod:null,
   lastEventAbs:-1e9,
@@ -684,6 +709,7 @@ function saveState(force=false){
       offers:state.offers,job:state.job,
       elapsed:state.elapsed,progress:state.progress,hiddenDuration:state.hiddenDuration,
       startEnergy:state.startEnergy,energySpentJob:state.energySpentJob,jobStartAbs:state.jobStartAbs,
+      packageDamage:state.packageDamage,
       pendingEndOfDay:state.pendingEndOfDay,eod:state.eod,
       lastEventAbs:state.lastEventAbs,
       promptActive:state.promptActive,promptEndMs:state.promptEndMs,lastPromptAbs:state.lastPromptAbs,
@@ -735,6 +761,7 @@ function loadState(){
   state.startEnergy = (typeof s.startEnergy==="number") ? s.startEnergy : state.energy;
   state.energySpentJob = (typeof s.energySpentJob==="number") ? s.energySpentJob : 0;
   state.jobStartAbs = (typeof s.jobStartAbs==="number") ? s.jobStartAbs : nowAbsPrecise();
+  state.packageDamage = (typeof s.packageDamage==="number") ? clamp(Math.round(s.packageDamage),0,100) : 0;
 
   /* Reject malformed saved job so we don't crash on resume */
   if(state.job && typeof state.job!=="object"){
@@ -870,6 +897,26 @@ function updateTimeDialFromDeadline(){
     overdueArc.setAttribute("d", describeArc(cx,cy,r,0,360*fracOver));
     overdueArc.style.opacity="0.28";
   }
+}
+
+function updateDamageDial(){
+}
+
+function updateSpeedDial(){
+  const wrap=$("speedStripWrap");
+  if(!wrap) return;
+  const s=clamp(state.speed||1, 1, 5);
+  const max=maxSpeed();
+  wrap.style.setProperty("--speed-level", String(s));
+  const steps=wrap.querySelectorAll(".speedStep");
+  steps.forEach(el=>{
+    const step=parseInt(el.getAttribute("data-step"),10);
+    el.classList.toggle("active", step===s);
+    el.classList.toggle("disabled", step>max);
+  });
+  const mult = SPEEDS[s] && SPEEDS[s].mult ? SPEEDS[s].mult : 1;
+  const mph = Math.round(8 * mult);
+  elText("speedMph", mph + " mph");
 }
 
 function weekdayName(){
@@ -1129,15 +1176,17 @@ function buildSpeed(){
 }
 function syncSpeed(){
   const seg=$("speedSeg");
-  if(!seg) return;
-  const max=maxSpeed();
-  if(state.speed>max) state.speed=max;
-  [...seg.children].forEach((b,i)=>{
-    const s=i+1;
-    b.classList.toggle("active",s===state.speed);
-    b.disabled=s>max;
-  });
-  elText("speedLabel",SPEEDS[state.speed].name);
+  if(seg){
+    const max=maxSpeed();
+    if(state.speed>max) state.speed=max;
+    [...seg.children].forEach((b,i)=>{
+      const s=i+1;
+      b.classList.toggle("active",s===state.speed);
+      b.disabled=s>max;
+    });
+    elText("speedLabel",SPEEDS[state.speed].name);
+  }
+  updateSpeedDial();
 }
 
 function clearSnackFx(){
@@ -1216,6 +1265,7 @@ function startJob(o, resume=false){
     state.elapsed=0; state.progress=0; state.hiddenDuration=o.hidden;
     state.startEnergy=state.energy; state.energySpentJob=0;
     state.jobStartAbs = nowAbsPrecise();
+    state.packageDamage=0;
     state.lastEventAbs=-1e9; state.lastPromptAbs=-1e9;
     state.promptActive=false; state.promptEndMs=0;
 
@@ -1227,13 +1277,15 @@ function startJob(o, resume=false){
 
   const p=clamp(state.hiddenDuration>0 ? (state.progress/state.hiddenDuration) : 0,0,1);
   elText("pct", Math.floor(p*100)+"%");
-  const fill=$("fill"); if(fill) fill.style.width=(p*100)+"%";
+  const courierIcon=$("courierIcon"); if(courierIcon) courierIcon.style.setProperty("--progress", String(p));
 
   elText("milesDone",(o.dist*p).toFixed(1)+" mi");
   elText("milesLeft",(o.dist-(o.dist*p)).toFixed(1)+" mi");
   elText("mph",Math.round(8*SPEEDS[state.speed].mult)+" mph");
 
   updateTimeDialFromDeadline();
+  updateDamageDial();
+  updateSpeedDial();
   syncSpeed();
   setMode("job");
 
@@ -1302,6 +1354,8 @@ function openEventFromObj(e){
   }
 
   updateTimeDialFromDeadline();
+  updateDamageDial();
+  updateSpeedDial();
   renderTop();
 
   const modal=$("eventModal");
@@ -1420,13 +1474,15 @@ function tick(ts){
   const denom=state.hiddenDuration;
   const p=denom>0 ? clamp(state.progress/denom,0,1) : 0;
   elText("pct", Math.floor(p*100)+"%");
-  const fill=$("fill"); if(fill) fill.style.width=(p*100)+"%";
+  const courierIcon=$("courierIcon"); if(courierIcon) courierIcon.style.setProperty("--progress", String(p));
 
   elText("milesDone",(state.job.dist*p).toFixed(1)+" mi");
   elText("milesLeft",(state.job.dist-(state.job.dist*p)).toFixed(1)+" mi");
   elText("mph", Math.round(8*mult)+" mph");
 
   updateTimeDialFromDeadline();
+  updateDamageDial();
+  updateSpeedDial();
   maybeStartPromptWindow(dtMin);
   maybeTriggerAutoEvent(dtMin);
 
@@ -1882,6 +1938,18 @@ function hardResetGame(){
   saveState(true);
 }
 on("resetGame","click", hardResetGame);
+
+/* Speed strip: tap a box to change speed */
+on("speedStripWrap","click", function(ev){
+  const step=ev.target.closest(".speedStep");
+  if(!step || !state.job) return;
+  const s=parseInt(step.getAttribute("data-step"),10);
+  if(!(s>=1&&s<=5)) return;
+  const max=maxSpeed();
+  state.speed=Math.min(s,max);
+  syncSpeed();
+  saveState(true);
+});
 
 /* Boot */
 initClientsIfNeeded();

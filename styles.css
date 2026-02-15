@@ -317,18 +317,52 @@ h1 {
   color: var(--accent);
 }
 
-.bar {
-  height: 16px;
-  border: var(--stroke) solid var(--accent);
-  border-radius: 999px;
-  overflow: hidden;
+/* Progress: line track with courier icon moving along it */
+.progressTrack {
+  position: relative;
+  height: 64px;
   margin-top: 6px;
+  overflow: hidden;
 }
 
-.fill {
-  height: 100%;
-  width: 0;
+.progressLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
   background: var(--accent);
+  border-radius: 999px;
+}
+
+.courierIcon {
+  --progress: 0;
+  --courier-w: calc(50px * 453 / 234);
+  --courier-h: 50px;
+  position: absolute;
+  left: calc(var(--progress) * 100% - var(--courier-w) / 2);
+  bottom: 4px;
+  width: var(--courier-w);
+  height: var(--courier-h);
+  min-width: var(--courier-w);
+  min-height: var(--courier-h);
+  transition: left 0.15s ease-out;
+  overflow: hidden;
+  color: var(--accent);
+}
+
+.courierIcon .courierPng {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--courier-w);
+  height: var(--courier-h);
+  min-width: var(--courier-w);
+  min-height: var(--courier-h);
+  background-image: url("Courier.png");
+  background-size: var(--courier-w) var(--courier-h);
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .progressMeta {
@@ -349,43 +383,152 @@ h1 {
   text-align: right;
 }
 
-.timeLeftWrap {
+.dialsRow {
   margin-top: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 0;
+  color: var(--accent);
+  flex-wrap: nowrap;
+}
+
+.dialsSide {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.damageBox {
+  width: 140px;
+  height: 140px;
+  flex: 0 0 auto;
+  border: 2px solid var(--accent);
+  border-radius: var(--r2);
+  background: transparent;
+}
+
+.dialsRow .dialWrap.dialWrapTime {
+  flex: 0 0 auto;
+}
+
+.speedStripWrap {
+  --speed-level: 3;
+  width: 140px;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.speedStripInner {
+  position: relative;
+  width: 44px;
+  height: 140px;
+}
+
+.speedStrip {
+  display: flex;
+  flex-direction: column-reverse;
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--accent);
+  border-radius: var(--r2);
+  overflow: hidden;
+}
+
+.speedStep {
+  flex: 1 1 0;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--accent);
+  border-bottom: 1px solid var(--accent);
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+.speedStep:last-child {
+  border-bottom: none;
+}
+
+.speedStep.active {
+  opacity: 1;
+}
+
+.speedStep.disabled {
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+.speedLever {
+  position: absolute;
+  left: -10px;
+  top: calc((5 - var(--speed-level, 3)) * (100% / 5));
+  width: 8px;
+  height: calc(100% / 5);
+  background: var(--accent);
+  border-radius: 2px;
+  pointer-events: none;
+  transition: top 0.15s ease-out;
+}
+
+.speedMph {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 900;
   color: var(--accent);
 }
 
-.timeDial {
-  width: 176px;
-  height: 176px;
-  flex: 0 0 auto;
+.dialWrap .dial {
+  width: 120px;
+  height: 120px;
   display: block;
 }
 
-.timeDial circle,
-.timeDial path {
+.dialWrapTime .dial.timeDial {
+  width: 140px;
+  height: 140px;
+}
+
+.dial circle,
+.dial path {
   vector-effect: non-scaling-stroke;
 }
 
-.timeDial text {
+.dial text {
   font-family: var(--mono);
   fill: var(--accent);
   text-anchor: middle;
   dominant-baseline: middle;
 }
 
-.timeDial .dialK {
-  font-size: 8px;
+.dial .dialK {
+  font-size: 7px;
   font-weight: 900;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.6px;
   opacity: 0.9;
 }
 
-.timeDial .dialV {
-  font-size: 12px;
+.dial .dialV {
+  font-size: 10px;
   font-weight: 950;
+}
+
+.dialWrapTime .dial .dialK {
+  font-size: 8px;
+  letter-spacing: 0.8px;
+}
+
+.dialWrapTime .dial .dialV {
+  font-size: 12px;
 }
 
 #overdueArc {
