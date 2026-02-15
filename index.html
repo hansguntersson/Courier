@@ -214,7 +214,7 @@
         <div class="progressLabel">Progress</div>
         <div class="progressPct" id="pct">0%</div>
       </div>
-      <div class="progressTrack" aria-hidden="true">
+      <div class="progressTrack" id="progressTrack" aria-hidden="true">
         <div class="progressLine"></div>
         <div class="courierIcon" id="courierIcon">
           <div class="courierPng"></div>
@@ -229,22 +229,30 @@
 
     <div class="dialsRow">
       <div class="dialsSide dialsLeft">
-        <div class="damageBox" id="damageBox" aria-label="Damage">
-          <div class="damageBoxLabel">DAMAGE</div>
-          <div class="damageBoxPct">40%</div>
+        <div class="dialsCol">
+          <div class="dialsColHeader">DAMAGE</div>
+          <div class="damageBox" id="damageBox" aria-label="Damage">
+            <div class="damageBoxFill" id="damageBoxFill" aria-hidden="true"></div>
+            <div class="damageBoxPct" id="damageBoxPct">0%</div>
+          </div>
         </div>
       </div>
       <div class="dialWrap dialWrapTime">
-        <svg class="dial timeDial" viewBox="0 0 100 100" aria-label="Time left">
-          <circle cx="50" cy="50" r="38" stroke="var(--accent)" stroke-width="14" fill="none" opacity="0.18"></circle>
-          <path id="overdueArc" stroke="var(--accent)" stroke-width="16" fill="none" stroke-linecap="butt" d=""></path>
-          <path id="timeArc" stroke="var(--accent)" stroke-width="16" fill="none" stroke-linecap="butt" d=""></path>
-          <text class="dialK" id="timeLabel" x="50" y="45">TIME LEFT</text>
-          <text class="dialV" id="remaining" x="50" y="57">—</text>
-        </svg>
+        <div class="dialsCol">
+          <div class="dialsColHeader">TIME LEFT</div>
+          <svg class="dial timeDial" viewBox="0 0 100 100" aria-label="Time left">
+            <circle cx="50" cy="50" r="38" stroke="var(--accent)" stroke-width="14" fill="none" opacity="0.18"></circle>
+            <path id="overdueArc" stroke="var(--accent)" stroke-width="16" fill="none" stroke-linecap="butt" d=""></path>
+            <path id="timeArc" stroke="var(--accent)" stroke-width="16" fill="none" stroke-linecap="butt" d=""></path>
+            <text class="dialK dialKHidden" id="timeLabel" x="50" y="45">TIME LEFT</text>
+            <text class="dialV" id="remaining" x="50" y="50">—</text>
+          </svg>
+        </div>
       </div>
       <div class="dialsSide dialsRight">
-        <div class="speedStripWrap" id="speedStripWrap" aria-label="Speed 1–5">
+        <div class="dialsCol">
+          <div class="dialsColHeader">SPEED</div>
+          <div class="speedStripWrap" id="speedStripWrap" aria-label="Speed 1–5">
           <div class="speedStripInner">
             <div class="speedLever" id="speedLever" aria-hidden="true"></div>
             <div class="speedStrip">
@@ -255,6 +263,7 @@
               <div class="speedStep" data-step="5">5</div>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
@@ -434,7 +443,8 @@ function fbPack(topic){
     early:`Saved us on ${topic}. Perfect.`,
     ontime:`Nice. ${topic} landed on time.`,
     late:`Too slow. ${topic} was late.`,
-    aborted:`What happened? ${topic} didn’t arrive.`
+    aborted:`What happened? ${topic} didn’t arrive.`,
+    damage:`Unacceptable damage. ${topic} arrived damaged.`
   };
 }
 
@@ -458,7 +468,7 @@ const state={
   clientSeq:{},
   completedOneOffs:{},
   clientStats:{},
-  stats:{miles:0,minutes:0,made:0,spent:0,accepted:0,completed:0,aborted:0,early:0,late:0,snacks:0,events:0},
+  stats:{miles:0,minutes:0,made:0,spent:0,accepted:0,completed:0,aborted:0,early:0,late:0,snacks:0,events:0,damageSum:0},
   snackCdUntil:0,
   drinkCdUntil:0,
   lastTs:0,raf:0
@@ -578,7 +588,7 @@ function initClientsIfNeeded(){
     }
   }
   if(!state.stats || typeof state.stats!=="object"){
-    state.stats={miles:0,minutes:0,made:0,spent:0,accepted:0,completed:0,aborted:0,early:0,late:0,snacks:0,events:0};
+    state.stats={miles:0,minutes:0,made:0,spent:0,accepted:0,completed:0,aborted:0,early:0,late:0,snacks:0,events:0,damageSum:0};
   }
   if(typeof state.dayShopSpend!=="number") state.dayShopSpend=0;
 }
@@ -686,6 +696,8 @@ function renderStats(){
 
     <div class="vrow"><span>Jobs early</span><span>${Number(state.stats.early)}</span></div>
     <div class="vrow"><span>Jobs late</span><span>${Number(state.stats.late)}</span></div>
+
+    <div class="vrow"><span>Average parcel damage</span><span>${state.stats.completed > 0 ? ( (state.stats.damageSum || 0) / state.stats.completed ).toFixed(1) + "%" : "—" }</span></div>
 
     <div class="vrow"><span>Snacks eaten</span><span>${Number(state.stats.snacks)}</span></div>
     <div class="vrow"><span>Events encountered</span><span>${Number(state.stats.events)}</span></div>
@@ -902,6 +914,13 @@ function updateTimeDialFromDeadline(){
 }
 
 function updateDamageDial(){
+  const d=clamp(state.packageDamage||0, 0, 100);
+  const box=$("damageBox");
+  if(box){
+    box.style.setProperty("--damage", String(d));
+    box.classList.toggle("damageBox--high", d >= 80);
+  }
+  elText("damageBoxPct", d+"%");
 }
 
 function updateSpeedDial(){
@@ -1097,6 +1116,7 @@ function genOffers(){
     const fast=avg/SPEEDS[5].mult;
     const hidden=fast+(slow-fast)*(.15+Math.random()*.7);
     const slack = Math.round(Math.random()*2*60);
+    const maxDamage = 15 + Math.floor(Math.random()*31);
 
     return{
       id:j.id, who:j.who, seq:j.seq, repeat:!!j.repeat, fb:j.fb,
@@ -1105,7 +1125,8 @@ function genOffers(){
       hidden:Math.round(hidden),
       pay:Math.round(j.dist*12+Math.random()*6),
       route: ROUTES[Math.floor(Math.random()*ROUTES.length)],
-      deadlineAbs: base + Math.round(avg) + slack
+      deadlineAbs: base + Math.round(avg) + slack,
+      maxDamage
     };
   });
 
@@ -1247,9 +1268,10 @@ function hideFeedback(){
   elText("feedbackText","—");
   const av=$("resultAvatar"); if(av) av.innerHTML="";
 }
-function feedbackForOutcome(job, tp, aborted=false){
+function feedbackForOutcome(job, tp, aborted=false, damageOverLimit=false){
   if(!job || !job.fb) return "";
   if(aborted) return job.fb.aborted;
+  if(damageOverLimit && job.fb.damage) return job.fb.damage;
   if(tp>0) return job.fb.early;
   if(tp<0) return job.fb.late;
   return job.fb.ontime;
@@ -1280,6 +1302,7 @@ function startJob(o, resume=false){
   const p=clamp(state.hiddenDuration>0 ? (state.progress/state.hiddenDuration) : 0,0,1);
   elText("pct", Math.floor(p*100)+"%");
   const courierIcon=$("courierIcon"); if(courierIcon) courierIcon.style.setProperty("--progress", String(p));
+  const progressTrack=$("progressTrack"); if(progressTrack) progressTrack.style.setProperty("--progress", String(p));
 
   elText("milesDone",(o.dist*p).toFixed(1)+" mi");
   elText("milesLeft",(o.dist-(o.dist*p)).toFixed(1)+" mi");
@@ -1342,11 +1365,22 @@ function openEventFromObj(e){
   const list=$("eventList");
   if(!list) return;
 
+  let damageApplied = 0;
+  if(e.mood==="bad" && e.damage != null){
+    const isAccident = !!e.isAccident;
+    const chance = isAccident ? (0.5 + 0.15*(state.speed-1)) : (0.2 + 0.12*(state.speed-1));
+    if(Math.random() < Math.min(1, chance)){
+      state.packageDamage = clamp((state.packageDamage||0) + e.damage, 0, 100);
+      damageApplied = e.damage;
+    }
+  }
+
   const rows=[];
   rows.push(`<div class="vrow"><span>${escapeHtml(e.t)}</span><span></span></div>`);
   rows.push(`<div class="vrow"><span style="opacity:.85">${escapeHtml(e.d)}</span><span></span></div>`);
   if(e.mins!==0) rows.push(`<div class="vrow"><span>Time</span><span>${e.mins>0?"+":""}${Number(e.mins)}m</span></div>`);
   if(e.energy!==0) rows.push(`<div class="vrow"><span>Energy</span><span>${e.energy>0?"+":""}${Number(e.energy)}%</span></div>`);
+  if(damageApplied) rows.push(`<div class="vrow"><span>Parcel damage</span><span>+${Number(damageApplied)}%</span></div>`);
   list.innerHTML=rows.join("");
 
   if(e.mins!==0) advanceMinutes(e.mins);
@@ -1477,6 +1511,7 @@ function tick(ts){
   const p=denom>0 ? clamp(state.progress/denom,0,1) : 0;
   elText("pct", Math.floor(p*100)+"%");
   const courierIcon=$("courierIcon"); if(courierIcon) courierIcon.style.setProperty("--progress", String(p));
+  const progressTrack=$("progressTrack"); if(progressTrack) progressTrack.style.setProperty("--progress", String(p));
 
   elText("milesDone",(state.job.dist*p).toFixed(1)+" mi");
   elText("milesLeft",(state.job.dist-(state.job.dist*p)).toFixed(1)+" mi");
@@ -1505,7 +1540,15 @@ function finish(){
   const avgSpeed = (state.job.dist * 60) / timeTaken;
 
   const tp = tipPenaltyForFinish();
-  const total = Math.max(0, state.job.pay + tp);
+  let damagePenalty = 0;
+  if(state.job.maxDamage != null && state.packageDamage > state.job.maxDamage){
+    const excess = state.packageDamage - state.job.maxDamage;
+    const pay = state.job.pay;
+    const minPenalty = Math.round(pay * 0.70);
+    const excessPenalty = Math.round(pay * (excess / 100) * 2);
+    damagePenalty = Math.min(pay, minPenalty + excessPenalty);
+  }
+  const total = Math.max(0, state.job.pay + tp - damagePenalty);
 
   initClientsIfNeeded();
 
@@ -1517,6 +1560,7 @@ function finish(){
   state.stats.minutes += timeTaken;
   state.stats.miles += state.job.dist;
   state.stats.made += total;
+  state.stats.damageSum = (state.stats.damageSum || 0) + (state.packageDamage || 0);
   if(tp>0) state.stats.early++;
   if(tp<0) state.stats.late++;
 
@@ -1525,18 +1569,21 @@ function finish(){
   elText("resultTitle","Job complete");
   const rl=$("resultList");
   if(rl){
-    rl.innerHTML=`
-      <div class="vrow"><span>Time taken</span><span>${Number(timeTaken)}m</span></div>
-      <div class="vrow"><span>Average speed</span><span>${Number(avgSpeed).toFixed(1)} mph</span></div>
-      <div class="vrow"><span>Energy used</span><span>${Number(energyUsed)}%</span></div>
-      <div class="vrow"><span>Pay</span><span>£${Number(state.job.pay)}</span></div>
-      <div class="vrow"><span>Tip / penalty</span><span>${tp>=0 ? "£"+Number(tp) : "-£"+Number(Math.abs(tp))}</span></div>
-      <div class="vrow total"><span>Total</span><span>£${Number(total)}</span></div>
-    `;
+    const rows=[
+      `<div class="vrow"><span>Time taken</span><span>${Number(timeTaken)}m</span></div>`,
+      `<div class="vrow"><span>Average speed</span><span>${Number(avgSpeed).toFixed(1)} mph</span></div>`,
+      `<div class="vrow"><span>Energy used</span><span>${Number(energyUsed)}%</span></div>`,
+      `<div class="vrow"><span>Parcel damage</span><span>${Number(state.packageDamage||0)}%</span></div>`,
+      `<div class="vrow"><span>Pay</span><span>£${Number(state.job.pay)}</span></div>`,
+      `<div class="vrow"><span>Tip / penalty</span><span>${tp>=0 ? "£"+Number(tp) : "-£"+Number(Math.abs(tp))}</span></div>`
+    ];
+    if(damagePenalty>0) rows.push(`<div class="vrow"><span>Unacceptable damage</span><span>-£${Number(damagePenalty)}</span></div>`);
+    rows.push(`<div class="vrow total"><span>Total</span><span>£${Number(total)}</span></div>`);
+    rl.innerHTML=rows.join("");
   }
 
   hideFeedback();
-  showFeedback(state.job.who, feedbackForOutcome(state.job, tp, false));
+  showFeedback(state.job.who, feedbackForOutcome(state.job, tp, false, damagePenalty > 0));
 
   state.job=null;
   pruneOffers();
@@ -1926,7 +1973,7 @@ function hardResetGame(){
   state.promptActive=false; state.promptEndMs=0; state.lastPromptAbs=-1e9;
 
   state.clientSeq={}; state.completedOneOffs={}; state.clientStats={};
-  state.stats={miles:0,minutes:0,made:0,spent:0,accepted:0,completed:0,aborted:0,early:0,late:0,snacks:0,events:0};
+  state.stats={miles:0,minutes:0,made:0,spent:0,accepted:0,completed:0,aborted:0,early:0,late:0,snacks:0,events:0,damageSum:0};
 
   state.snackCdUntil=0;
   state.drinkCdUntil=0;

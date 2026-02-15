@@ -98,31 +98,31 @@
 
   var EVENT_POOL = {
     normal: [
-      { t: "Red light gamble", d: "You gun it through a late amber. Lose 6% energy.", energy: -6, mins: 0, mood: "bad" },
-      { t: "Stairwell detour", d: "Lift is out. Lose 4 minutes.", energy: 0, mins: 4, mood: "bad" },
+      { t: "Red light gamble", d: "You gun it through a late amber. Lose 6% energy.", energy: -6, mins: 0, mood: "bad", damage: 5 },
+      { t: "Stairwell detour", d: "Lift is out. Lose 4 minutes.", energy: 0, mins: 4, mood: "bad", damage: 4 },
       { t: "Tailwind stretch", d: "Clear road. Gain 2 minutes.", energy: 0, mins: -2, mood: "good" },
-      { t: "Loose strap", d: "Bag strap slips. Lose 3% energy and 2 minutes.", energy: -3, mins: 2, mood: "bad" },
+      { t: "Loose strap", d: "Bag strap slips. Lose 3% energy and 2 minutes.", energy: -3, mins: 2, mood: "bad", damage: 8 },
       { t: "Quiet cut-through", d: "A calm side street. Gain 1 minute.", energy: 0, mins: -1, mood: "good" },
-      { t: "Coffee queue", d: "You get stuck behind a crowd. Lose 3 minutes.", energy: 0, mins: 3, mood: "bad" },
+      { t: "Coffee queue", d: "You get stuck behind a crowd. Lose 3 minutes.", energy: 0, mins: 3, mood: "bad", damage: 3 },
       { t: "Helpful doorman", d: "Someone holds the door. Gain 1 minute.", energy: 0, mins: -1, mood: "good" },
-      { t: "Wrong buzzer", d: "You buzz the wrong flat. Lose 2 minutes.", energy: 0, mins: 2, mood: "bad" },
-      { t: "Cobbles", d: "Rattly cobbles drain you. Lose 2% energy.", energy: -2, mins: 0, mood: "bad" },
+      { t: "Wrong buzzer", d: "You buzz the wrong flat. Lose 2 minutes.", energy: 0, mins: 2, mood: "bad", damage: 2 },
+      { t: "Cobbles", d: "Rattly cobbles drain you. Lose 2% energy.", energy: -2, mins: 0, mood: "bad", damage: 6 },
       { t: "Green wave", d: "Every light goes green. Gain 3 minutes.", energy: 0, mins: -3, mood: "good" },
-      { t: "Roadworks shuffle", d: "Cones everywhere. Lose 5 minutes.", energy: 0, mins: 5, mood: "bad" },
+      { t: "Roadworks shuffle", d: "Cones everywhere. Lose 5 minutes.", energy: 0, mins: 5, mood: "bad", damage: 5 },
       { t: "Unexpected shortcut", d: "A signed cut-through. Gain 2 minutes.", energy: 0, mins: -2, mood: "good" },
       { t: "Bag re-pack", d: "You re-pack on the move. Lose 1 minute, save 1% energy.", energy: 1, mins: 1, mood: "neutral" },
-      { t: "Steep ramp", d: "A long ramp saps you. Lose 4% energy.", energy: -4, mins: 0, mood: "bad" }
+      { t: "Steep ramp", d: "A long ramp saps you. Lose 4% energy.", energy: -4, mins: 0, mood: "bad", damage: 4 }
     ],
     accident: [
-      { t: "Near miss", d: "Hard brake. You wobble it out. Lose 8% energy and 3 minutes.", energy: -8, mins: 3, mood: "bad" },
-      { t: "Minor spill", d: "You clip a curb. Lose 12% energy and 6 minutes.", energy: -12, mins: 6, mood: "bad" },
-      { t: "Impact scare", d: "Close call with a car door. Lose 10% energy and 4 minutes.", energy: -10, mins: 4, mood: "bad" },
-      { t: "Chain slip", d: "Chain slips under load. Lose 6% energy and 3 minutes.", energy: -6, mins: 3, mood: "bad" },
-      { t: "Skid", d: "Painted lines in drizzle. Lose 9% energy and 2 minutes.", energy: -9, mins: 2, mood: "bad" },
-      { t: "Kerb strike", d: "Wheel bangs a kerb. Lose 7% energy and 5 minutes.", energy: -7, mins: 5, mood: "bad" },
-      { t: "Handlebar clip", d: "You clip a bollard. Lose 11% energy and 4 minutes.", energy: -11, mins: 4, mood: "bad" },
-      { t: "Foot slip", d: "Foot slips off pedal. Lose 5% energy and 2 minutes.", energy: -5, mins: 2, mood: "bad" },
-      { t: "Bag spill", d: "Something shifts. Lose 8% energy and 6 minutes.", energy: -8, mins: 6, mood: "bad" }
+      { t: "Near miss", d: "Hard brake. You wobble it out. Lose 8% energy and 3 minutes.", energy: -8, mins: 3, mood: "bad", damage: 10, isAccident: true },
+      { t: "Minor spill", d: "You clip a curb. Lose 12% energy and 6 minutes.", energy: -12, mins: 6, mood: "bad", damage: 18, isAccident: true },
+      { t: "Impact scare", d: "Close call with a car door. Lose 10% energy and 4 minutes.", energy: -10, mins: 4, mood: "bad", damage: 14, isAccident: true },
+      { t: "Chain slip", d: "Chain slips under load. Lose 6% energy and 3 minutes.", energy: -6, mins: 3, mood: "bad", damage: 8, isAccident: true },
+      { t: "Skid", d: "Painted lines in drizzle. Lose 9% energy and 2 minutes.", energy: -9, mins: 2, mood: "bad", damage: 12, isAccident: true },
+      { t: "Kerb strike", d: "Wheel bangs a kerb. Lose 7% energy and 5 minutes.", energy: -7, mins: 5, mood: "bad", damage: 10, isAccident: true },
+      { t: "Handlebar clip", d: "You clip a bollard. Lose 11% energy and 4 minutes.", energy: -11, mins: 4, mood: "bad", damage: 15, isAccident: true },
+      { t: "Foot slip", d: "Foot slips off pedal. Lose 5% energy and 2 minutes.", energy: -5, mins: 2, mood: "bad", damage: 6, isAccident: true },
+      { t: "Bag spill", d: "Something shifts. Lose 8% energy and 6 minutes.", energy: -8, mins: 6, mood: "bad", damage: 12, isAccident: true }
     ]
   };
 
@@ -227,7 +227,7 @@
   ];
 
   window.CourierData = {
-    VERSION: "1.0.49",
+    VERSION: "1.0.50",
     WEEKLY_TARGET: 1000,
     PRICES: { drink: 12, snack: 6 },
     COSTS: { bills: 35, food: 15 },

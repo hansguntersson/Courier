@@ -319,10 +319,16 @@ h1 {
 
 /* Progress: line track with courier icon moving along it */
 .progressTrack {
+  --progress: 0;
   position: relative;
-  height: 74px;
+  height: 148px;
   margin-top: 6px;
   overflow: hidden;
+  background-image: url("Background.png");
+  background-size: cover;
+  background-position: calc(50% + (var(--progress) - 0.5) * 24%) center;
+  background-repeat: no-repeat;
+  transition: background-position 0.15s ease-out;
 }
 
 .progressLine {
@@ -370,6 +376,7 @@ h1 {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   margin-top: 8px;
+  margin-bottom: 14px;
   font-family: var(--mono);
   font-size: 14px;
   font-weight: 800;
@@ -402,34 +409,79 @@ h1 {
   justify-content: center;
 }
 
-.damageBox {
-  width: 94px;
-  height: 94px;
-  flex: 0 0 auto;
-  border: 2px solid var(--accent);
-  border-radius: var(--r2);
-  background: transparent;
+.dialsCol {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
+  gap: 8px;
 }
 
-.damageBoxLabel {
+.dialsColHeader {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 900;
   letter-spacing: 0.6px;
   color: var(--accent);
   opacity: 0.9;
 }
 
+.dialKHidden {
+  visibility: hidden;
+}
+
+.damageBox {
+  --damage: 0;
+  width: 52px;
+  height: 140px;
+  flex: 0 0 auto;
+  border: 2px solid var(--accent);
+  border-radius: var(--r2);
+  background: transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.damageBoxFill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--damage) * 1%);
+  max-height: 100%;
+  background: var(--accent);
+  border-radius: 0 0 calc(var(--r2) - 2px) calc(var(--r2) - 2px);
+  transition: height 0.2s ease-out;
+}
+
 .damageBoxPct {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: max(calc(var(--damage) * 1%), 6px);
   font-family: var(--mono);
   font-size: 18px;
   font-weight: 950;
   color: var(--accent);
+  text-align: center;
+  transition: bottom 0.2s ease-out, color 0.2s ease-out, background 0.2s ease-out;
+  line-height: 1.2;
+}
+
+.damageBox.damageBox--high .damageBoxPct {
+  bottom: max(calc(var(--damage) * 1% - 22px), 6px);
+  color: var(--bg);
+  background: var(--accent);
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+.damageBoxLabel {
+  font-family: var(--mono);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+  color: var(--accent);
+  opacity: 0.9;
 }
 
 .dialsRow .dialWrap.dialWrapTime {
@@ -548,11 +600,12 @@ h1 {
 }
 
 .progressBlock {
-  margin-top: 26px;
+  margin-top: 58px;
+  margin-bottom: 50px;
 }
 
 .progressHead {
-  margin-bottom: 18px;
+  margin-bottom: 0;
 }
 
 .jobControls {
