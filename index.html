@@ -229,7 +229,10 @@
 
     <div class="dialsRow">
       <div class="dialsSide dialsLeft">
-        <div class="damageBox" id="damageBox" aria-label="Damage visual"></div>
+        <div class="damageBox" id="damageBox" aria-label="Damage">
+          <div class="damageBoxLabel">DAMAGE</div>
+          <div class="damageBoxPct">40%</div>
+        </div>
       </div>
       <div class="dialWrap dialWrapTime">
         <svg class="dial timeDial" viewBox="0 0 100 100" aria-label="Time left">
@@ -1132,6 +1135,9 @@ function openOffer(o){
 
 function renderJobs(){
   pruneOffers();
+  if(state.offers.length < 2){
+    genOffers();
+  }
   const wrap=$("jobs");
   if(!wrap) return;
   wrap.innerHTML="";

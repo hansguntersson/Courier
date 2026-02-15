@@ -340,7 +340,7 @@ h1 {
   --courier-w: calc(50px * 453 / 234);
   --courier-h: 50px;
   position: absolute;
-  left: calc(var(--progress) * 100% - var(--courier-w) / 2);
+  left: calc(var(--progress) * (100% - 0.75 * var(--courier-w)));
   bottom: 4px;
   width: var(--courier-w);
   height: var(--courier-h);
@@ -402,12 +402,33 @@ h1 {
 }
 
 .damageBox {
-  width: 140px;
-  height: 140px;
+  width: 94px;
+  height: 94px;
   flex: 0 0 auto;
   border: 2px solid var(--accent);
   border-radius: var(--r2);
   background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.damageBoxLabel {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.6px;
+  color: var(--accent);
+  opacity: 0.9;
+}
+
+.damageBoxPct {
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 950;
+  color: var(--accent);
 }
 
 .dialsRow .dialWrap.dialWrapTime {
@@ -426,7 +447,7 @@ h1 {
 
 .speedStripInner {
   position: relative;
-  width: 44px;
+  width: 52px;
   height: 140px;
 }
 
@@ -455,10 +476,6 @@ h1 {
   cursor: pointer;
 }
 
-.speedStep:last-child {
-  border-bottom: none;
-}
-
 .speedStep.active {
   opacity: 1;
 }
@@ -470,7 +487,8 @@ h1 {
 
 .speedLever {
   position: absolute;
-  left: -10px;
+  right: -10px;
+  left: auto;
   top: calc((5 - var(--speed-level, 3)) * (100% / 5));
   width: 8px;
   height: calc(100% / 5);
