@@ -580,8 +580,7 @@ h1 {
   border-radius: 14px;
 }
 
-/* Hidden for now to try UI without: remove display:none to show again */
-#jobControls,
+/* Speed bar still hidden for now; remove below to show again */
 #speedBar {
   display: none !important;
 }
