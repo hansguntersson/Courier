@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Teko:wght@600;700&display=swap");
+
 /* Courier – main styles (extracted from index.html) */
 
 :root {
@@ -8,6 +10,7 @@
   --r: 16px;
   --r2: 12px;
   --sans: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  --display: "Teko", "Oswald", "Arial Narrow", "Segoe UI", sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
@@ -25,9 +28,18 @@ body {
 }
 
 .safe {
-  padding: calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 150px);
+  padding: calc(env(safe-area-inset-top) + 24px) 14px calc(env(safe-area-inset-bottom) + 150px);
   max-width: 760px;
   margin: 0 auto;
+}
+
+body.landing-mode .safe {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* HEADER: left Courier, right big clock */
@@ -40,19 +52,33 @@ body {
 
 h1 {
   margin: 0;
-  font-size: 44px;
-  font-weight: 900;
+  font-family: var(--display);
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
+  line-height: 1;
+  font-size: 56px;
+  font-weight: 700;
   color: var(--accent);
-  text-align: left;
+  text-align: center;
 }
 
 .headerClock {
   text-align: right;
-  font-family: var(--mono);
-  font-size: 44px;
-  font-weight: 950;
-  letter-spacing: 0.2px;
+  font-family: var(--display);
+  font-size: 56px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  line-height: 1;
   color: var(--accent);
+}
+
+body.landing-mode .top {
+  justify-content: center;
+  margin-bottom: 0;
+}
+
+body.landing-mode .landingWrap {
+  margin-top: 0;
 }
 
 .divider {
@@ -64,7 +90,7 @@ h1 {
 /* KPI: two-line, flipped */
 .kpiRow {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr auto;
   gap: 12px;
   font-family: var(--mono);
   font-weight: 900;
@@ -104,6 +130,10 @@ h1 {
 
 .screen {
   display: block;
+}
+
+#board {
+  margin-top: 0;
 }
 
 .hidden {
@@ -170,6 +200,12 @@ h1 {
 }
 
 /* HUB: tighter vertical spacing between buttons */
+.hubTopRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
 .hubGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -180,6 +216,10 @@ h1 {
 .hubGrid .btn,
 .hubGrid .btnOutline {
   margin-top: 0;
+}
+
+#goJobs {
+  margin-top: 100px;
 }
 
 .hubBtn {
@@ -199,6 +239,52 @@ h1 {
   stroke-linecap: round;
   stroke-linejoin: round;
   flex: 0 0 auto;
+}
+
+.landingWrap {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.landingImageSlot {
+  min-height: 260px;
+  background: var(--accent);
+  border-radius: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 5px var(--bg);
+}
+
+.landingImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.landingReset {
+  width: auto;
+  justify-self: center;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  padding: 0;
+  margin-top: 4px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.landingReset:hover,
+.landingReset:focus-visible {
+  opacity: 1;
+  text-decoration: none;
 }
 
 .row {

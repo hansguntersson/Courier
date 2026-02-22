@@ -11,50 +11,42 @@
 <body>
 <div class="safe">
   <div class="top">
-    <h1>Courier</h1>
+    <h1 id="topTitle">COURIER</h1>
     <div class="headerClock" id="headerClock">08:00</div>
   </div>
 
-  <div class="divider"></div>
+  <div class="divider" id="topDivider"></div>
 
   <!-- KPI shown on hub + job board + shop -->
   <div id="kpiWrap">
     <div class="kpiRow">
       <div class="kpiCell kpiLeft">
-        <div class="kpiBig" id="kpiWeekdayTop">monday</div>
-        <div class="kpiSmall" id="kpiWeekBottom">Week 1, Day 1</div>
+        <div class="kpiBig">£1000 due friday 23:59</div>
       </div>
       <div class="kpiCell kpiRight">
         <div class="kpiBig" id="kpiCashTop">Cash: £0</div>
-        <div class="kpiSmall" id="kpiTargetBottom">£1000 due friday</div>
       </div>
     </div>
     <div class="divider"></div>
   </div>
 
+  <!-- LANDING -->
+  <div class="screen" id="landing">
+    <div class="landingWrap">
+      <div class="landingImageSlot" aria-label="Landing image area">
+        <img class="landingImage" src="avatar.png" alt="Courier avatar" />
+      </div>
+      <button class="btn" id="startGame">Start Game</button>
+      <button class="landingReset" id="resetGame">Reset game</button>
+    </div>
+  </div>
+
   <!-- HUB -->
-  <div class="screen" id="hub">
+  <div class="screen hidden" id="hub">
+    <div class="hubTopRow">
+      <button class="btnOutline btnSmall" id="backLanding">Back</button>
+    </div>
     <div class="hubGrid">
-      <button class="btn hubBtn" id="goJobs" aria-label="Jobs">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <rect x="5" y="3.5" width="14" height="17" rx="2"></rect>
-          <line x1="8" y1="8" x2="16" y2="8"></line>
-          <line x1="8" y1="12" x2="16" y2="12"></line>
-          <line x1="8" y1="16" x2="13" y2="16"></line>
-        </svg>
-        Jobs
-      </button>
-
-      <button class="btn hubBtn" id="goShop" aria-label="Shop">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M6 8h15l-2 9H8L6 8Z"></path>
-          <path d="M6 8l-2-3H2"></path>
-          <circle cx="9" cy="20" r="1"></circle>
-          <circle cx="18" cy="20" r="1"></circle>
-        </svg>
-        Shop
-      </button>
-
       <button class="btnOutline hubBtn" disabled aria-label="Kit">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M14.5 5.2a3.7 3.7 0 0 0-4.9 4.9L4.4 15.3a2 2 0 0 0 2.8 2.8l5.2-5.2a3.7 3.7 0 0 0 4.9-4.9l-2 2-2-2 2-2Z"></path>
@@ -95,16 +87,6 @@
         Stats
       </button>
 
-      <button class="btnOutline hubBtn" id="resetGame" aria-label="Reset">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M21 12a9 9 0 1 1-2.64-6.36"></path>
-          <path d="M21 3v6h-6"></path>
-          <path d="M9 9l6 6"></path>
-          <path d="M15 9l-6 6"></path>
-        </svg>
-        Reset
-      </button>
-
       <button class="btn hubBtn" id="restOpen" aria-label="Rest">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M4 12V8a2 2 0 0 1 2-2h11a3 3 0 0 1 3 3v3"></path>
@@ -113,7 +95,26 @@
         </svg>
         Rest
       </button>
+
+      <button class="btn hubBtn" id="goShop" aria-label="Shop">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 8h15l-2 9H8L6 8Z"></path>
+          <path d="M6 8l-2-3H2"></path>
+          <circle cx="9" cy="20" r="1"></circle>
+          <circle cx="18" cy="20" r="1"></circle>
+        </svg>
+        Shop
+      </button>
     </div>
+    <button class="btn hubBtn" id="goJobs" aria-label="Look for jobs">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="5" y="3.5" width="14" height="17" rx="2"></rect>
+        <line x1="8" y1="8" x2="16" y2="8"></line>
+        <line x1="8" y1="12" x2="16" y2="12"></line>
+        <line x1="8" y1="16" x2="13" y2="16"></line>
+      </svg>
+      LOOK FOR JOBS
+    </button>
   </div>
 
   <!-- CLIENTS -->
@@ -173,7 +174,7 @@
       <button class="btnOutline btnSmall" id="backHub">Back</button>
     </div>
     <div class="jobs" id="jobs"></div>
-    <div class="refreshText" id="refreshJobs">↻ Refresh jobs</div>
+    <div class="refreshText hidden" id="refreshJobs">↻ Refresh jobs</div>
   </div>
 
   <!-- OFFER -->
@@ -350,7 +351,7 @@
 <!-- Rest modal -->
 <div class="modal" id="restModal">
   <div class="modalBox">
-    <div class="modalTitle">REST</div>
+    <div class="modalTitle">You can restore depleted energy by taking a rest</div>
     <button class="modalBtn modalBtnFill" id="rest2">Rest 2 hours</button>
     <button class="modalBtn modalBtnFill" id="rest4">Rest 4 hours</button>
     <button class="modalBtn modalBtnFill" id="rest8">Rest 8 hours</button>
@@ -477,6 +478,7 @@ const state={
 let jobsInitialised=false;
 let selectedOffer=null;
 let lastSaveMs=0;
+let currentMode="landing";
 
 const $=id=>document.getElementById(id);
 const on=(id, evt, fn)=>{
@@ -946,12 +948,17 @@ function isFridayDayNumber(dayNum){
 }
 
 function setMode(m){
-  ["hub","clients","stats","shop","board","offer","job","result","end"].forEach(s=>{
+  currentMode=m;
+  ["landing","hub","clients","stats","shop","board","offer","job","result","end"].forEach(s=>{
     const el=$(s);
     if(el) el.classList.toggle("hidden", s!==m);
   });
+  if(document.body) document.body.classList.toggle("landing-mode", m==="landing");
   const speedBar=$("speedBar"); if(speedBar) speedBar.classList.toggle("hidden",m!=="job");
   const jobControls=$("jobControls"); if(jobControls) jobControls.classList.toggle("hidden",m!=="job");
+  const energyFooter=$("energyFooter"); if(energyFooter) energyFooter.classList.toggle("hidden", m==="landing");
+  const headerClock=$("headerClock"); if(headerClock) headerClock.classList.toggle("hidden", m==="landing");
+  const topDivider=$("topDivider"); if(topDivider) topDivider.classList.toggle("hidden", m==="landing");
 
   const kpiWrap=$("kpiWrap");
   if(kpiWrap) kpiWrap.classList.toggle("hidden", !(m==="hub" || m==="board" || m==="shop"));
@@ -981,12 +988,15 @@ function updateConsumablesModal(){
 
 function renderTop(){
   setAccentFromTime();
+  const topTitle=$("topTitle");
+  if(topTitle){
+    topTitle.textContent = currentMode==="landing"
+      ? "COURIER"
+      : weekdayName().toUpperCase();
+  }
   elText("headerClock",fmtClock(minutesOfDay()));
 
-  elText("kpiWeekdayTop", weekdayName());
-  elText("kpiWeekBottom", "Week "+weekNumber()+", Day "+state.day);
   elText("kpiCashTop", "Cash: £"+state.cash);
-  elText("kpiTargetBottom", "£"+WEEKLY_TARGET+" due friday");
 
   renderEnergyBar();
   updateEventBtnUI();
@@ -1627,6 +1637,7 @@ on("refreshJobs","click", ()=>{
 });
 
 on("backHub","click", ()=>{ setMode("hub"); renderTop(); saveState(true); });
+on("backLanding","click", ()=>{ setMode("landing"); renderTop(); saveState(true); });
 
 on("goClients","click", ()=>{
   renderClients();
@@ -1983,10 +1994,19 @@ function hardResetGame(){
   wipeSave();
   initClientsIfNeeded();
   renderTop();
-  setMode("hub");
+  setMode("landing");
   saveState(true);
 }
 on("resetGame","click", hardResetGame);
+on("startGame","click", ()=>{
+  if(loadedFromSave && state.job){
+    startJob(state.job, true);
+  }else{
+    setMode("hub");
+  }
+  renderTop();
+  saveState(true);
+});
 
 /* Speed strip: tap a box to change speed */
 on("speedStripWrap","click", function(ev){
@@ -2005,17 +2025,12 @@ initClientsIfNeeded();
 buildSpeed();
 
 const loaded = loadState();
+const loadedFromSave = loaded;
 renderTop();
 document.title="Courier";
 
-/* Version mismatch or no save: show main menu (hub). Otherwise resume job or hub. */
-if(!loaded){
-  setMode("hub");
-}else if(state.job){
-  startJob(state.job, true);
-}else{
-  setMode("hub");
-}
+/* Always start on landing; Start Game continues to hub/resume flow. */
+setMode("landing");
 
 if(loaded && Array.isArray(state.offers) && state.offers.length>0){
   pruneOffers();
