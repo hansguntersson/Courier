@@ -43,28 +43,15 @@
 
   <!-- HUB -->
   <div class="screen hidden" id="hub">
-    <div class="hubTopRow">
-      <button class="btnOutline btnSmall" id="backLanding">Back</button>
-    </div>
     <div class="hubGrid">
-      <button class="btnOutline hubBtn" disabled aria-label="Kit">
+      <button class="btn hubBtn" id="goStats" aria-label="Stats">
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M14.5 5.2a3.7 3.7 0 0 0-4.9 4.9L4.4 15.3a2 2 0 0 0 2.8 2.8l5.2-5.2a3.7 3.7 0 0 0 4.9-4.9l-2 2-2-2 2-2Z"></path>
-          <path d="M18.5 15.5l1.6 1.6"></path>
-          <path d="M17.3 16.7l1.6-1.6"></path>
+          <path d="M4 20V6"></path>
+          <path d="M9 20V10"></path>
+          <path d="M14 20V4"></path>
+          <path d="M19 20V13"></path>
         </svg>
-        KIT
-      </button>
-
-      <button class="btnOutline hubBtn" disabled aria-label="Rides">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="7" cy="17" r="3"></circle>
-          <circle cx="17" cy="17" r="3"></circle>
-          <path d="M9 17l3-7h3l2 4"></path>
-          <path d="M12 10l-2-3H7"></path>
-          <path d="M12 10h4"></path>
-        </svg>
-        RIDES
+        STATS
       </button>
 
       <button class="btn hubBtn" id="goClients" aria-label="Clients">
@@ -77,23 +64,33 @@
         CLIENTS
       </button>
 
-      <button class="btn hubBtn" id="goStats" aria-label="Stats">
+      <button class="btn hubBtn" id="goAccommodation" aria-label="Crib">
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4 20V6"></path>
-          <path d="M9 20V10"></path>
-          <path d="M14 20V4"></path>
-          <path d="M19 20V13"></path>
+          <path d="M4 11l8-6 8 6"></path>
+          <path d="M6 10v9h12v-9"></path>
+          <path d="M10 19v-5h4v5"></path>
         </svg>
-        STATS
+        CRIB
       </button>
 
-      <button class="btn hubBtn" id="restOpen" aria-label="Rest">
+      <button class="btn hubBtn" id="goRides" aria-label="Rides">
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4 12V8a2 2 0 0 1 2-2h11a3 3 0 0 1 3 3v3"></path>
-          <path d="M4 12h17a2 2 0 0 1 2 2v4H2v-4a2 2 0 0 1 2-2Z"></path>
-          <path d="M7 10h3"></path>
+          <circle cx="7" cy="17" r="3"></circle>
+          <circle cx="17" cy="17" r="3"></circle>
+          <path d="M9 17l3-7h3l2 4"></path>
+          <path d="M12 10l-2-3H7"></path>
+          <path d="M12 10h4"></path>
         </svg>
-        REST
+        RIDES
+      </button>
+
+      <button class="btn hubBtn" id="goKit" aria-label="Kit">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M14.5 5.2a3.7 3.7 0 0 0-4.9 4.9L4.4 15.3a2 2 0 0 0 2.8 2.8l5.2-5.2a3.7 3.7 0 0 0 4.9-4.9l-2 2-2-2 2-2Z"></path>
+          <path d="M18.5 15.5l1.6 1.6"></path>
+          <path d="M17.3 16.7l1.6-1.6"></path>
+        </svg>
+        KIT
       </button>
 
       <button class="btn hubBtn" id="goShop" aria-label="Shop">
@@ -115,6 +112,14 @@
       </svg>
       LOOK FOR JOBS
     </button>
+    <button class="btn hubBtn" id="restOpen" aria-label="Rest">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 12V8a2 2 0 0 1 2-2h11a3 3 0 0 1 3 3v3"></path>
+        <path d="M4 12h17a2 2 0 0 1 2 2v4H2v-4a2 2 0 0 1 2-2Z"></path>
+        <path d="M7 10h3"></path>
+      </svg>
+      REST
+    </button>
   </div>
 
   <!-- CLIENTS -->
@@ -135,6 +140,33 @@
     <div class="resultBox">
       <div class="vlist" id="statsList"></div>
     </div>
+  </div>
+
+  <!-- CRIB -->
+  <div class="screen hidden" id="accommodation">
+    <div class="pageTopRow">
+      <div class="jobTitle pageTitleLeft">CRIB</div>
+      <button class="btnOutline btnSmall" id="backHubAccommodation">Back</button>
+    </div>
+    <div class="vlist accommodationList" id="accommodationList"></div>
+  </div>
+
+  <!-- KIT -->
+  <div class="screen hidden" id="kit">
+    <div class="pageTopRow">
+      <div class="jobTitle pageTitleLeft">KIT</div>
+      <button class="btnOutline btnSmall" id="backHubKit">Back</button>
+    </div>
+    <div class="vlist kitList" id="kitList"></div>
+  </div>
+
+  <!-- RIDES -->
+  <div class="screen hidden" id="rides">
+    <div class="pageTopRow">
+      <div class="jobTitle pageTitleLeft">RIDES</div>
+      <button class="btnOutline btnSmall" id="backHubRides">Back</button>
+    </div>
+    <div class="vlist ridesList" id="ridesList"></div>
   </div>
 
   <!-- SHOP -->
@@ -211,20 +243,16 @@
     <div class="offerHeader" id="jobName">—</div>
 
     <div class="progressBlock">
-      <div class="row progressHead">
-        <div class="progressLabel">Progress</div>
-        <div class="progressPct" id="pct">0%</div>
-      </div>
-      <div class="progressTrack" id="progressTrack" aria-hidden="true">
+      <div class="progressTrack" id="progressTrack">
+        <div class="progressMeta">
+          <div id="milesDone">0.0 mi</div>
+          <div id="mph">0 mph</div>
+          <div id="milesLeft">0.0 mi</div>
+        </div>
         <div class="progressLine"></div>
         <div class="courierIcon" id="courierIcon">
           <div class="courierPng"></div>
         </div>
-      </div>
-      <div class="progressMeta">
-        <div id="milesDone">0.0 mi</div>
-        <div id="mph">0 mph</div>
-        <div id="milesLeft">0.0 mi</div>
       </div>
     </div>
 
@@ -360,6 +388,17 @@
   </div>
 </div>
 
+<!-- Job details modal -->
+<div class="modal" id="jobDetailsModal">
+  <div class="modalBox">
+    <div class="modalTitle">JOB DETAILS</div>
+    <div class="resultBox">
+      <div class="vlist" id="jobDetailsList"></div>
+    </div>
+    <button class="btn" id="closeJobDetails">Close</button>
+  </div>
+</div>
+
 <script>
 "use strict";
 
@@ -387,6 +426,27 @@ const END_OF_DAY_POSITIVES = window.CourierData.END_OF_DAY_POSITIVES;
 const END_OF_DAY_NEGATIVES = window.CourierData.END_OF_DAY_NEGATIVES;
 const SAVE_KEY = window.CourierData.SAVE_KEY;
 const SAVE_SCHEMA = window.CourierData.SAVE_SCHEMA;
+const KIT_ITEMS = window.CourierData.KIT_ITEMS || [
+  { id: "helmet", name: "Helmet", price: 35 },
+  { id: "sunglasses", name: "Sunglasses", price: 18 },
+  { id: "rain_mac", name: "Rain Mac", price: 42 },
+  { id: "puncture_kit", name: "Puncture Kit", price: 22 },
+  { id: "panniers", name: "Panniers", price: 55 }
+];
+const ACCOMMODATION_OPTIONS = window.CourierData.ACCOMMODATION_OPTIONS || [
+  { id: "rough", name: "Rough Sleep", dailyCost: 0, note: "No nightly cost, harsh recovery conditions." },
+  { id: "hostel", name: "Hostel Bed", dailyCost: 8, note: "Cheap shared room." },
+  { id: "room", name: "Private Room", dailyCost: 18, note: "Basic private accommodation." },
+  { id: "flat", name: "Studio Flat", dailyCost: 32, note: "Comfortable and consistent." },
+  { id: "hotel", name: "Budget Hotel", dailyCost: 52, note: "Most expensive, best comfort." }
+];
+const RIDES = window.CourierData.RIDES || [
+  { id: "city_bike", name: "City Bike", type: "Bicycle", price: 0, note: "Your starter ride." },
+  { id: "road_bike", name: "Road Bike", type: "Bicycle", price: 120, note: "Light and efficient." },
+  { id: "cargo_bike", name: "Cargo Bike", type: "Bicycle", price: 260, note: "Stable with heavier loads." },
+  { id: "ebike", name: "E-Bike", type: "Electric Bicycle", price: 520, note: "Assisted pedaling." },
+  { id: "moped", name: "City Moped", type: "Moped", price: 980, note: "Fastest option in town." }
+];
 
 /* ===== UNIQUE AVATARS (vectors) ===== */
 function avatarSvg(who, color="currentColor"){
@@ -454,9 +514,55 @@ const JOB_CATALOG = window.__JOB_CATALOG__ || (window.__JOB_CATALOG__ = window.C
   return { id: j.id, who: j.who, name: j.name, dist: j.dist, seq: j.seq, repeat: j.repeat, fb: fbPack(j.fbTopic) };
 }));
 
+function defaultRideOwned(){
+  const out={};
+  RIDES.forEach((r, i)=>{ out[r.id] = i===0; });
+  return out;
+}
+function normalizeRideState(){
+  if(!state.rideOwned || typeof state.rideOwned!=="object"){
+    state.rideOwned=defaultRideOwned();
+  }
+  RIDES.forEach((r, i)=>{
+    if(typeof state.rideOwned[r.id]!=="boolean") state.rideOwned[r.id]=(i===0);
+  });
+  const fallback = RIDES[0] ? RIDES[0].id : "";
+  if(!RIDES.some(r=>r.id===state.rideEquipped && state.rideOwned[r.id])){
+    state.rideEquipped = RIDES.find(r=>state.rideOwned[r.id])?.id || fallback;
+  }
+}
+
+function normalizeAccommodationState(){
+  const fallback = ACCOMMODATION_OPTIONS[0] ? ACCOMMODATION_OPTIONS[0].id : "";
+  if(typeof state.accommodationId!=="string" || !ACCOMMODATION_OPTIONS.some(a=>a.id===state.accommodationId)){
+    state.accommodationId = fallback;
+  }
+}
+function currentAccommodationOption(){
+  normalizeAccommodationState();
+  return ACCOMMODATION_OPTIONS.find(a=>a.id===state.accommodationId) || ACCOMMODATION_OPTIONS[0] || {id:"",name:"Unknown",dailyCost:0,note:""};
+}
+function defaultKitInventory(){
+  const out={};
+  KIT_ITEMS.forEach(item=>{ out[item.id]=0; });
+  return out;
+}
+function normalizeKitState(){
+  if(!state.kitInventory || typeof state.kitInventory!=="object"){
+    state.kitInventory=defaultKitInventory();
+  }
+  KIT_ITEMS.forEach(item=>{
+    const cur=state.kitInventory[item.id];
+    state.kitInventory[item.id] = (typeof cur==="number" && cur>=0) ? Math.floor(cur) : 0;
+  });
+}
+
 const state={
   day:1,cash:0,time:8*60,energy:100,speed:3,
   snacks:1,drinks:1,
+  kitInventory:defaultKitInventory(),
+  accommodationId:ACCOMMODATION_OPTIONS[0] ? ACCOMMODATION_OPTIONS[0].id : "",
+  rideOwned:defaultRideOwned(),rideEquipped:RIDES[0] ? RIDES[0].id : "",
   jobsDone:0,dayEarnings:0,
   dayShopSpend:0,
   offers:[],job:null,
@@ -706,6 +812,163 @@ function renderStats(){
   `;
 }
 
+function renderAccommodation(){
+  normalizeAccommodationState();
+  const list=$("accommodationList");
+  if(!list) return;
+
+  list.innerHTML="";
+  ACCOMMODATION_OPTIONS.forEach((opt)=>{
+    const active = state.accommodationId===opt.id;
+    const card=document.createElement("div");
+    card.className="accommodationCard";
+    card.innerHTML=`
+      <div class="accommodationTop">
+        <div class="accommodationName">${escapeHtml(opt.name.toUpperCase())}</div>
+        <div class="accommodationCost">£${Number(opt.dailyCost)}/day</div>
+      </div>
+      <div class="accommodationNote">${escapeHtml(opt.note)}</div>
+      <div class="accommodationBottom">
+        <div class="accommodationStatus">${active ? "Current choice" : "Not selected"}</div>
+        <button class="btnOutline btnSmall accommodationAction">${active ? "SELECTED" : "SELECT"}</button>
+      </div>
+    `;
+    const btn=card.querySelector(".accommodationAction");
+    if(btn){
+      btn.disabled=active;
+      btn.addEventListener("click", ()=>{
+        state.accommodationId=opt.id;
+        renderAccommodation();
+        saveState(true);
+      });
+    }
+    list.appendChild(card);
+  });
+}
+
+function renderKit(){
+  normalizeKitState();
+  const list=$("kitList");
+  if(!list) return;
+
+  list.innerHTML="";
+  KIT_ITEMS.forEach((item)=>{
+    const qty=state.kitInventory[item.id] || 0;
+    const noCash = state.cash < item.price;
+    const missing = Math.max(0, item.price - state.cash);
+
+    const wrap=document.createElement("div");
+    wrap.className="kitItem";
+    wrap.innerHTML=`
+      <button class="btn btnIcon kitBuyBtn"${noCash ? " disabled" : ""}>
+        <span>${escapeHtml(item.name)} — £${Number(item.price)} (x${Number(qty)})</span>
+      </button>
+      <div class="shopDisabledReason${noCash ? " shopDisabledReason--funds" : ""}">
+        ${noCash ? `Unavailable: insufficient funds (need £${Number(missing)} more)` : ""}
+      </div>
+    `;
+
+    const btn=wrap.querySelector(".kitBuyBtn");
+    if(btn){
+      btn.addEventListener("click", ()=>{
+        if(state.cash < item.price) return;
+        initClientsIfNeeded();
+        state.cash -= item.price;
+        state.stats.spent += item.price;
+        state.dayShopSpend += item.price;
+        state.kitInventory[item.id] = (state.kitInventory[item.id] || 0) + 1;
+        renderKit();
+        renderTop();
+        saveState(true);
+      });
+    }
+
+    list.appendChild(wrap);
+  });
+}
+
+function renderRides(){
+  normalizeRideState();
+  const list=$("ridesList");
+  if(!list) return;
+
+  list.innerHTML="";
+
+  RIDES.forEach((ride, i)=>{
+    const owned = !!state.rideOwned[ride.id];
+    const equipped = owned && state.rideEquipped===ride.id;
+    const prevOwned = (i===0) ? true : !!state.rideOwned[RIDES[i-1].id];
+    const canAfford = state.cash>=ride.price;
+
+    let btnLabel="EQUIPPED";
+    let disabled=true;
+    let reason="";
+    let status="Owned";
+
+    if(!owned){
+      status = `Price: £${Number(ride.price)}`;
+      btnLabel = `BUY £${Number(ride.price)}`;
+      disabled = !(prevOwned && canAfford);
+      if(!prevOwned) reason="Buy the previous ride first.";
+      else if(!canAfford) reason=`Need £${Number(ride.price-state.cash)} more.`;
+    }else if(!equipped){
+      btnLabel="EQUIP";
+      disabled=false;
+    }else{
+      status="Owned - equipped";
+    }
+
+    const card=document.createElement("div");
+    card.className="rideCard";
+    card.innerHTML=`
+      <div class="rideTop">
+        <div>
+          <div class="rideName">${escapeHtml(ride.name.toUpperCase())}</div>
+          <div class="rideType">${escapeHtml(ride.type)}</div>
+        </div>
+        <div class="ridePrice">${owned ? "OWNED" : "£"+Number(ride.price)}</div>
+      </div>
+      <div class="rideNote">${escapeHtml(ride.note)}</div>
+      <div class="rideBottom">
+        <div class="rideStatus">${escapeHtml(status)}</div>
+        <button class="btnOutline btnSmall rideAction">${escapeHtml(btnLabel)}</button>
+      </div>
+      <div class="rideReason">${escapeHtml(reason)}</div>
+    `;
+
+    const action=card.querySelector(".rideAction");
+    if(action){
+      action.disabled=disabled;
+      action.addEventListener("click", ()=>{
+        if(owned){
+          if(equipped) return;
+          state.rideEquipped=ride.id;
+          renderRides();
+          renderTop();
+          saveState(true);
+          return;
+        }
+
+        if(!prevOwned) return;
+        if(!canAfford) return;
+
+        initClientsIfNeeded();
+        state.cash -= ride.price;
+        state.stats.spent += ride.price;
+        state.dayShopSpend += ride.price;
+        state.rideOwned[ride.id]=true;
+        state.rideEquipped=ride.id;
+
+        renderRides();
+        renderTop();
+        saveState(true);
+      });
+    }
+
+    list.appendChild(card);
+  });
+}
+
 /* ===== SAVE / LOAD ===== */
 function safeJsonParse(s){ try{ return JSON.parse(s); }catch(e){ return null; } }
 
@@ -720,6 +983,9 @@ function saveState(force=false){
     state:{
       day:state.day,cash:state.cash,time:state.time,energy:state.energy,speed:state.speed,
       snacks:state.snacks,drinks:state.drinks,
+      kitInventory:state.kitInventory,
+      accommodationId:state.accommodationId,
+      rideOwned:state.rideOwned,rideEquipped:state.rideEquipped,
       jobsDone:state.jobsDone,dayEarnings:state.dayEarnings,
       dayShopSpend:state.dayShopSpend,
       offers:state.offers,job:state.job,
@@ -762,6 +1028,13 @@ function loadState(){
 
   state.snacks = (typeof s.snacks==="number") ? clamp(Math.round(s.snacks),0,5) : state.snacks;
   state.drinks = (typeof s.drinks==="number") ? clamp(Math.round(s.drinks),0,5) : state.drinks;
+  state.kitInventory = (s.kitInventory && typeof s.kitInventory==="object") ? s.kitInventory : state.kitInventory;
+  normalizeKitState();
+  state.accommodationId = (typeof s.accommodationId==="string") ? s.accommodationId : state.accommodationId;
+  normalizeAccommodationState();
+  state.rideOwned = (s.rideOwned && typeof s.rideOwned==="object") ? s.rideOwned : state.rideOwned;
+  state.rideEquipped = (typeof s.rideEquipped==="string") ? s.rideEquipped : state.rideEquipped;
+  normalizeRideState();
 
   state.jobsDone = (typeof s.jobsDone==="number") ? Math.max(0,Math.round(s.jobsDone)) : state.jobsDone;
   state.dayEarnings = (typeof s.dayEarnings==="number") ? Math.round(s.dayEarnings) : state.dayEarnings;
@@ -949,7 +1222,7 @@ function isFridayDayNumber(dayNum){
 
 function setMode(m){
   currentMode=m;
-  ["landing","hub","clients","stats","shop","board","offer","job","result","end"].forEach(s=>{
+  ["landing","hub","clients","stats","accommodation","kit","rides","shop","board","offer","job","result","end"].forEach(s=>{
     const el=$(s);
     if(el) el.classList.toggle("hidden", s!==m);
   });
@@ -961,7 +1234,7 @@ function setMode(m){
   const topDivider=$("topDivider"); if(topDivider) topDivider.classList.toggle("hidden", m==="landing");
 
   const kpiWrap=$("kpiWrap");
-  if(kpiWrap) kpiWrap.classList.toggle("hidden", !(m==="hub" || m==="board" || m==="shop"));
+  if(kpiWrap) kpiWrap.classList.toggle("hidden", !(m==="hub" || m==="board" || m==="shop" || m==="clients" || m==="stats" || m==="rides" || m==="accommodation" || m==="kit"));
 
   saveState();
 }
@@ -1020,11 +1293,13 @@ function pickEodRandoms(){
 function snapshotEOD(){
   const dayEnded = state.day-1;
   const rent = isFridayDayNumber(dayEnded) ? WEEKLY_RENT : 0;
+  const accommodation = currentAccommodationOption().dailyCost || 0;
   state.eod={
     dayEnded,
     jobs: state.jobsDone,
     earnings: state.dayEarnings,
     shopSpent: Math.round(state.dayShopSpend||0),
+    accommodation,
     bills: COSTS.bills,
     food: COSTS.food,
     rent,
@@ -1038,9 +1313,10 @@ function showEndOfDay(){
   const food=state.eod.food;
   const rent=state.eod.rent;
   const shop=state.eod.shopSpent;
+  const accommodation=state.eod.accommodation||0;
   const randoms=state.eod.randoms||[];
 
-  const deductions = bills + food + rent + shop;
+  const deductions = bills + food + rent + shop + accommodation;
   const randomsSum=randoms.reduce(function(s,o){ return s+o.amt; },0);
   const net = state.eod.earnings - deductions + randomsSum;
   /* Cash after day = current cash (already has +earnings -shop) minus bills/food/rent, plus randoms */
@@ -1053,6 +1329,7 @@ function showEndOfDay(){
     rows.push(`<div class="vrow"><span>Jobs</span><span>${Number(state.eod.jobs)}</span></div>`);
     rows.push(`<div class="vrow"><span>Earnings</span><span>£${Number(state.eod.earnings)}</span></div>`);
     if(shop>0) rows.push(`<div class="vrow"><span>Shop spend</span><span>-£${Number(shop)}</span></div>`);
+    rows.push(`<div class="vrow"><span>Crib</span><span>-£${Number(accommodation)}</span></div>`);
     rows.push(`<div class="vrow"><span>Bills</span><span>-£${Number(bills)}</span></div>`);
     rows.push(`<div class="vrow"><span>Food</span><span>-£${Number(food)}</span></div>`);
     if(rent>0) rows.push(`<div class="vrow"><span>Rent</span><span>-£${Number(rent)}</span></div>`);
@@ -1435,6 +1712,37 @@ function openPromptEvent(){
   openEventFromObj(PROMPT_EVENTS[Math.floor(Math.random()*PROMPT_EVENTS.length)]);
 }
 
+function openJobDetails(){
+  if(!state.job) return;
+  const list=$("jobDetailsList");
+  if(list){
+    const rows=[
+      `<div class="vrow"><span>Job</span><span>${escapeHtml(state.job.name || "—")}</span></div>`,
+      `<div class="vrow"><span>Requestor</span><span>${escapeHtml(state.job.who || "—")}</span></div>`,
+      `<div class="vrow"><span>Distance</span><span>${Number(state.job.dist||0).toFixed(1)} mi</span></div>`,
+      `<div class="vrow"><span>Route</span><span>${escapeHtml(state.job.route || "—")}</span></div>`,
+      `<div class="vrow"><span>Pay</span><span>£${Number(state.job.pay||0)}</span></div>`,
+      `<div class="vrow"><span>Deadline</span><span>${fmtClock((state.job.deadlineAbs||0) % 1440)}</span></div>`
+    ];
+    if(state.job.maxDamage != null){
+      rows.push(`<div class="vrow"><span>Damage limit</span><span>${Number(state.job.maxDamage)}%</span></div>`);
+    }
+    if(state.job.quote){
+      rows.push(`<div class="vrow"><span>Brief</span><span></span></div>`);
+      rows.push(`<div class="vrow"><span style="opacity:.85">${escapeHtml(state.job.quote)}</span><span></span></div>`);
+    }
+    list.innerHTML=rows.join("");
+  }
+  const modal=$("jobDetailsModal");
+  if(modal) modal.style.display="flex";
+  saveState(true);
+}
+function closeJobDetails(){
+  const modal=$("jobDetailsModal");
+  if(modal) modal.style.display="none";
+  saveState(true);
+}
+
 function closeEvent(){
   const modal=$("eventModal");
   if(modal) modal.style.display="none";
@@ -1488,8 +1796,8 @@ function maybeStartPromptWindow(dtMin){
 function tick(ts){
   state.raf=requestAnimationFrame(tick);
 
-  const em=$("eventModal"), cm=$("energyModal"), rm=$("restModal");
-  if((em && em.style.display==="flex") || (cm && cm.style.display==="flex") || (rm && rm.style.display==="flex")){
+  const em=$("eventModal"), cm=$("energyModal"), rm=$("restModal"), jm=$("jobDetailsModal");
+  if((em && em.style.display==="flex") || (cm && cm.style.display==="flex") || (rm && rm.style.display==="flex") || (jm && jm.style.display==="flex")){
     state.lastTs=ts; return;
   }
 
@@ -1612,6 +1920,8 @@ function finish(){
 
 /* UI wiring */
 on("closeEvent","click", closeEvent);
+on("jobName","click", openJobDetails);
+on("closeJobDetails","click", closeJobDetails);
 
 on("goJobs","click", ()=>{
   if(!jobsInitialised){
@@ -1654,6 +1964,30 @@ on("goStats","click", ()=>{
   saveState(true);
 });
 on("backHubStats","click", ()=>{ setMode("hub"); renderTop(); saveState(true); });
+
+on("goAccommodation","click", ()=>{
+  renderAccommodation();
+  setMode("accommodation");
+  renderTop();
+  saveState(true);
+});
+on("backHubAccommodation","click", ()=>{ setMode("hub"); renderTop(); saveState(true); });
+
+on("goKit","click", ()=>{
+  renderKit();
+  setMode("kit");
+  renderTop();
+  saveState(true);
+});
+on("backHubKit","click", ()=>{ setMode("hub"); renderTop(); saveState(true); });
+
+on("goRides","click", ()=>{
+  renderRides();
+  setMode("rides");
+  renderTop();
+  saveState(true);
+});
+on("backHubRides","click", ()=>{ setMode("hub"); renderTop(); saveState(true); });
 
 on("offerBack","click", ()=>{
   selectedOffer=null;
@@ -1936,7 +2270,7 @@ on("restMorning","click", restUntilMorning);
 
 on("confirmEnd","click", ()=>{
   if(!state.eod) snapshotEOD();
-  const deductions = (state.eod.bills||0) + (state.eod.food||0) + (state.eod.rent||0);
+  const deductions = (state.eod.bills||0) + (state.eod.food||0) + (state.eod.rent||0) + (state.eod.accommodation||0);
   const randoms=state.eod.randoms||[];
   const randomsSum=randoms.reduce(function(s,o){ return s+o.amt; },0);
 
@@ -1970,9 +2304,14 @@ function hardResetGame(){
   const em=$("eventModal"); if(em) em.style.display="none";
   const cm=$("energyModal"); if(cm) cm.style.display="none";
   const rm=$("restModal"); if(rm) rm.style.display="none";
+  const jm=$("jobDetailsModal"); if(jm) jm.style.display="none";
 
   state.day=1; state.cash=0; state.time=8*60; state.energy=100; state.speed=3;
   state.snacks=1; state.drinks=1;
+  state.kitInventory=defaultKitInventory();
+  state.accommodationId=ACCOMMODATION_OPTIONS[0] ? ACCOMMODATION_OPTIONS[0].id : "";
+  state.rideOwned=defaultRideOwned();
+  state.rideEquipped=RIDES[0] ? RIDES[0].id : "";
 
   state.jobsDone=0; state.dayEarnings=0; state.dayShopSpend=0;
   state.offers=[]; state.job=null;

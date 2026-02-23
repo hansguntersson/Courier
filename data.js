@@ -230,6 +230,20 @@
     VERSION: "1.0.52",
     WEEKLY_TARGET: 1000,
     PRICES: { drink: 12, snack: 6 },
+    ACCOMMODATION_OPTIONS: [
+      { id: "rough", name: "Rough Sleep", dailyCost: 0, note: "No nightly cost, harsh recovery conditions." },
+      { id: "hostel", name: "Hostel Bed", dailyCost: 8, note: "Cheap shared room." },
+      { id: "room", name: "Private Room", dailyCost: 18, note: "Basic private accommodation." },
+      { id: "flat", name: "Studio Flat", dailyCost: 32, note: "Comfortable and consistent." },
+      { id: "hotel", name: "Budget Hotel", dailyCost: 52, note: "Most expensive, best comfort." }
+    ],
+    RIDES: [
+      { id: "city_bike", name: "City Bike", type: "Bicycle", price: 0, note: "Your starter ride." },
+      { id: "road_bike", name: "Road Bike", type: "Bicycle", price: 120, note: "Light and efficient." },
+      { id: "cargo_bike", name: "Cargo Bike", type: "Bicycle", price: 260, note: "Stable with heavier loads." },
+      { id: "ebike", name: "E-Bike", type: "Electric Bicycle", price: 520, note: "Assisted pedaling." },
+      { id: "moped", name: "City Moped", type: "Moped", price: 980, note: "Fastest option in town." }
+    ],
     COSTS: { bills: 35, food: 15 },
     WEEKLY_RENT: 1000,
     SPEEDS: {
