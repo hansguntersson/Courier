@@ -34,15 +34,18 @@
   <div class="screen" id="landing">
     <div class="landingWrap">
       <div class="landingImageSlot" aria-label="Landing image area">
-        <img class="landingImage" src="avatar.png" alt="Courier avatar" />
+        <img class="landingImage" src="Avatar.png" alt="Courier avatar" />
       </div>
-      <button class="btn" id="startGame">Start Game</button>
-      <button class="landingReset" id="resetGame">Reset game</button>
+      <button class="btn" id="startGame">START GAME</button>
+      <button class="landingReset" id="resetGame">RESET GAME</button>
     </div>
   </div>
 
   <!-- HUB -->
   <div class="screen hidden" id="hub">
+    <div class="hubTopRow">
+      <button class="btnOutline btnSmall" id="backLanding">Back</button>
+    </div>
     <div class="hubGrid">
       <button class="btnOutline hubBtn" disabled aria-label="Kit">
         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -50,7 +53,7 @@
           <path d="M18.5 15.5l1.6 1.6"></path>
           <path d="M17.3 16.7l1.6-1.6"></path>
         </svg>
-        Kit
+        KIT
       </button>
 
       <button class="btnOutline hubBtn" disabled aria-label="Rides">
@@ -61,7 +64,7 @@
           <path d="M12 10l-2-3H7"></path>
           <path d="M12 10h4"></path>
         </svg>
-        Rides
+        RIDES
       </button>
 
       <button class="btn hubBtn" id="goClients" aria-label="Clients">
@@ -71,7 +74,7 @@
           <circle cx="17" cy="9" r="2.2"></circle>
           <path d="M14.5 20c.7-2.7 5.3-2.7 6 0"></path>
         </svg>
-        Clients
+        CLIENTS
       </button>
 
       <button class="btn hubBtn" id="goStats" aria-label="Stats">
@@ -81,7 +84,16 @@
           <path d="M14 20V4"></path>
           <path d="M19 20V13"></path>
         </svg>
-        Stats
+        STATS
+      </button>
+
+      <button class="btn hubBtn" id="restOpen" aria-label="Rest">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 12V8a2 2 0 0 1 2-2h11a3 3 0 0 1 3 3v3"></path>
+          <path d="M4 12h17a2 2 0 0 1 2 2v4H2v-4a2 2 0 0 1 2-2Z"></path>
+          <path d="M7 10h3"></path>
+        </svg>
+        REST
       </button>
 
       <button class="btn hubBtn" id="goShop" aria-label="Shop">
@@ -91,7 +103,7 @@
           <circle cx="9" cy="20" r="1"></circle>
           <circle cx="18" cy="20" r="1"></circle>
         </svg>
-        Shop
+        SHOP
       </button>
     </div>
     <button class="btn hubBtn" id="goJobs" aria-label="Look for jobs">
@@ -103,20 +115,12 @@
       </svg>
       LOOK FOR JOBS
     </button>
-    <button class="btn hubBtn" id="restOpen" aria-label="Rest">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 12V8a2 2 0 0 1 2-2h11a3 3 0 0 1 3 3v3"></path>
-        <path d="M4 12h17a2 2 0 0 1 2 2v4H2v-4a2 2 0 0 1 2-2Z"></path>
-        <path d="M7 10h3"></path>
-      </svg>
-      Rest
-    </button>
   </div>
 
   <!-- CLIENTS -->
   <div class="screen hidden" id="clients">
     <div class="pageTopRow">
-      <div class="jobTitle pageTitleLeft">Clients</div>
+      <div class="jobTitle pageTitleLeft">CLIENTS</div>
       <button class="btnOutline btnSmall" id="backHubClients">Back</button>
     </div>
     <div class="vlist" id="clientsList"></div>
@@ -125,7 +129,7 @@
   <!-- STATS -->
   <div class="screen hidden" id="stats">
     <div class="pageTopRow">
-      <div class="jobTitle pageTitleLeft">Stats</div>
+      <div class="jobTitle pageTitleLeft">STATS</div>
       <button class="btnOutline btnSmall" id="backHubStats">Back</button>
     </div>
     <div class="resultBox">
@@ -136,7 +140,7 @@
   <!-- SHOP -->
   <div class="screen hidden" id="shop">
     <div class="pageTopRow">
-      <div class="jobTitle pageTitleLeft">Shop</div>
+      <div class="jobTitle pageTitleLeft">SHOP</div>
       <button class="btnOutline btnSmall" id="backHub2">Back</button>
     </div>
 
@@ -151,7 +155,6 @@
       </svg>
       <span>Energy drink — £<span id="drinkPrice"></span> (<span id="drinkCount"></span>/5)</span>
     </button>
-    <div class="shopDisabledReason" id="buyDrinkReason"></div>
 
     <button class="btn btnIcon" id="buySnack">
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -162,13 +165,12 @@
       </svg>
       <span>Snack — £<span id="snackPrice"></span> (<span id="snackCount"></span>/5)</span>
     </button>
-    <div class="shopDisabledReason" id="buySnackReason"></div>
   </div>
 
   <!-- JOB BOARD -->
   <div class="screen hidden" id="board">
     <div class="pageTopRow">
-      <div class="jobTitle pageTitleLeft">Job board</div>
+      <div class="jobTitle pageTitleLeft">JOB BOARD</div>
       <button class="btnOutline btnSmall" id="backHub">Back</button>
     </div>
     <div class="jobs" id="jobs"></div>
@@ -959,7 +961,7 @@ function setMode(m){
   const topDivider=$("topDivider"); if(topDivider) topDivider.classList.toggle("hidden", m==="landing");
 
   const kpiWrap=$("kpiWrap");
-  if(kpiWrap) kpiWrap.classList.toggle("hidden", !(m==="hub" || m==="board" || m==="shop" || m==="clients" || m==="stats"));
+  if(kpiWrap) kpiWrap.classList.toggle("hidden", !(m==="hub" || m==="board" || m==="shop"));
 
   saveState();
 }
@@ -1683,41 +1685,8 @@ function updateShopUI(){
 
   const bd=$("buyDrink");
   const bs=$("buySnack");
-  const drinkAtCap = state.drinks>=5;
-  const snackAtCap = state.snacks>=5;
-  const drinkNoCash = state.cash<PRICES.drink;
-  const snackNoCash = state.cash<PRICES.snack;
-
-  if(bd) bd.disabled = drinkAtCap || drinkNoCash;
-  if(bs) bs.disabled = snackAtCap || snackNoCash;
-
-  const drinkReason=$("buyDrinkReason");
-  const snackReason=$("buySnackReason");
-
-  if(drinkReason){
-    drinkReason.classList.remove("shopDisabledReason--funds");
-    if(drinkNoCash && !drinkAtCap){
-      const missing=Math.max(0, PRICES.drink - state.cash);
-      drinkReason.textContent=`Unavailable: insufficient funds (need £${missing} more)`;
-      drinkReason.classList.add("shopDisabledReason--funds");
-    }else if(drinkAtCap){
-      drinkReason.textContent="Unavailable: max stock reached (5/5)";
-    }else{
-      drinkReason.textContent="";
-    }
-  }
-  if(snackReason){
-    snackReason.classList.remove("shopDisabledReason--funds");
-    if(snackNoCash && !snackAtCap){
-      const missing=Math.max(0, PRICES.snack - state.cash);
-      snackReason.textContent=`Unavailable: insufficient funds (need £${missing} more)`;
-      snackReason.classList.add("shopDisabledReason--funds");
-    }else if(snackAtCap){
-      snackReason.textContent="Unavailable: max stock reached (5/5)";
-    }else{
-      snackReason.textContent="";
-    }
-  }
+  if(bd) bd.disabled = (state.drinks>=5) || (state.cash<PRICES.drink);
+  if(bs) bs.disabled = (state.snacks>=5) || (state.cash<PRICES.snack);
 }
 
 on("goShop","click", ()=>{
