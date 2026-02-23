@@ -77,6 +77,10 @@ body.landing-mode .top {
   margin-bottom: 0;
 }
 
+body.landing-mode h1 {
+  font-size: 84px;
+}
+
 body.landing-mode .landingWrap {
   margin-top: 0;
 }
@@ -194,6 +198,23 @@ body.landing-mode .landingWrap {
   flex: 0 0 auto;
 }
 
+.shopDisabledReason {
+  min-height: 18px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--accent);
+  opacity: 0.85;
+}
+
+.shopDisabledReason--funds {
+  color: #ff6f6f;
+  opacity: 1;
+  font-weight: 900;
+}
+
 .btnMini.btnIcon svg {
   width: 18px;
   height: 18px;
@@ -203,7 +224,7 @@ body.landing-mode .landingWrap {
 .hubTopRow {
   display: flex;
   justify-content: flex-end;
-  margin-top: 4px;
+  margin-top: 28px;
 }
 
 .hubGrid {
@@ -255,6 +276,12 @@ body.landing-mode .landingWrap {
   place-items: center;
   overflow: hidden;
   box-shadow: inset 0 0 0 5px var(--bg);
+}
+
+body.landing-mode .landingImageSlot {
+  width: 60%;
+  min-height: 156px;
+  justify-self: center;
 }
 
 .landingImage {
@@ -478,7 +505,7 @@ body.landing-mode .landingWrap {
 }
 
 .dialsRow {
-  margin-top: 32px;
+  margin-top: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
